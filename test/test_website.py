@@ -136,6 +136,43 @@ class WebsiteTester:
             print(f"❌ {path}: Element text test failed - {e}")
             return False
 
+    async def test_header_present(self, path):
+        """Test if header/navbar is present on the page"""
+        try:
+            url = f"{self.base_url}/{path}"
+            await self.page.goto(url)
+            await self.page.wait_for_load_state('networkidle')
+
+            # Check if navbar exists
+            navbar = self.page.locator('.navbar')
+            navbar_count = await navbar.count()
+
+            if navbar_count == 0:
+                print(f"❌ {path}: Header/navbar not found on page")
+                return False
+
+            # Check if logo exists
+            logo = self.page.locator('.navbar .logo')
+            logo_count = await logo.count()
+
+            if logo_count == 0:
+                print(f"❌ {path}: Logo not found in header")
+                return False
+
+            # Check if nav menu exists
+            nav_menu = self.page.locator('.navbar .nav-menu')
+            nav_menu_count = await nav_menu.count()
+
+            if nav_menu_count == 0:
+                print(f"❌ {path}: Navigation menu not found in header")
+                return False
+
+            print(f"✅ {path}: Header is present and contains logo and navigation")
+            return True
+        except Exception as e:
+            print(f"❌ {path}: Header presence test failed - {e}")
+            return False
+
     async def test_gallery_image_count(self, path, expected_count):
         """Test if gallery has expected number of images"""
         try:
@@ -309,6 +346,9 @@ async def main():
         # Test navigation
         results.append(await tester.test_navigation_links())
 
+        # Test header presence
+        results.append(await tester.test_header_present('index.html'))
+
         # Test broken links
         results.append(await tester.test_broken_links())
 
@@ -318,12 +358,14 @@ async def main():
         # Bio page
         bio_title = f"{tester.config['pages']['bio']['title']} - {tester.config['general']['siteTitle']}"
         results.append(await tester.test_page_exists_and_title('bio.html', bio_title))
+        results.append(await tester.test_header_present('bio.html'))
         results.append(await tester.test_meta_description('bio.html', tester.config['pages']['bio']['description']))
         results.append(await tester.test_element_text('bio.html', 'h2', tester.config['pages']['bio']['title']))
 
         # Paintings page
         paintings_title = f"{tester.config['pages']['paintings']['title']} - {tester.config['general']['siteTitle']}"
         results.append(await tester.test_page_exists_and_title('paintings.html', paintings_title))
+        results.append(await tester.test_header_present('paintings.html'))
         results.append(await tester.test_meta_description('paintings.html', tester.config['pages']['paintings']['description']))
 
         if 'paintings' in tester.config['assets'] and 'images' in tester.config['assets']['paintings']:
@@ -333,6 +375,7 @@ async def main():
         # Drawings page
         drawings_title = f"{tester.config['pages']['drawings']['title']} - {tester.config['general']['siteTitle']}"
         results.append(await tester.test_page_exists_and_title('drawings.html', drawings_title))
+        results.append(await tester.test_header_present('drawings.html'))
         results.append(await tester.test_meta_description('drawings.html', tester.config['pages']['drawings']['description']))
 
         if 'drawings' in tester.config['assets'] and 'images' in tester.config['assets']['drawings']:
@@ -342,6 +385,7 @@ async def main():
         # Sculptures page
         sculptures_title = f"{tester.config['pages']['sculptures']['title']} - {tester.config['general']['siteTitle']}"
         results.append(await tester.test_page_exists_and_title('sculptures.html', sculptures_title))
+        results.append(await tester.test_header_present('sculptures.html'))
         results.append(await tester.test_meta_description('sculptures.html', tester.config['pages']['sculptures']['description']))
 
         if 'sculptures' in tester.config['assets'] and 'images' in tester.config['assets']['sculptures']:

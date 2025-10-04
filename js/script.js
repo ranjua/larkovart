@@ -346,8 +346,8 @@ function populateGallery(galleryType) {
 
 
 document.addEventListener('DOMContentLoaded', async function() {
-    // Load header first
-    await loadHeader();
+    // This listener is disabled to avoid conflicts with the main listener
+    return;
 
     // Then load config and initialize page
     await loadConfig();
