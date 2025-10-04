@@ -34,7 +34,7 @@
         "hidden": false
       }
     ],
-    "footerText": "© 2024 Larkova Art. All rights reserved. | Contact",
+    "footerText": "© 2025 Larkova Art. All rights reserved.",
     "socialMedia": [
       {
         "platform": "Instagram",
@@ -110,7 +110,8 @@
           "medium": "Oil on canvas",
           "dimensions": "36\" x 48\"",
           "year": "2024",
-          "quality": "High resolution"
+          "quality": "High resolution",
+          "sold": false
         },
         {
           "type": "image",
@@ -120,7 +121,8 @@
           "medium": "Acrylic on canvas",
           "dimensions": "24\" x 30\"",
           "year": "2024",
-          "quality": "High resolution"
+          "quality": "High resolution",
+          "sold": true
         },
         {
           "type": "image",
@@ -130,7 +132,8 @@
           "medium": "Oil on canvas",
           "dimensions": "40\" x 30\"",
           "year": "2023",
-          "quality": "High resolution"
+          "quality": "High resolution",
+          "sold": false
         },
         {
           "type": "image",
@@ -140,7 +143,8 @@
           "medium": "Watercolor and gouache",
           "dimensions": "24\" x 32\"",
           "year": "2024",
-          "quality": "High resolution"
+          "quality": "High resolution",
+          "sold": true
         },
         {
           "type": "image",
@@ -150,7 +154,8 @@
           "medium": "Mixed media on canvas",
           "dimensions": "30\" x 40\"",
           "year": "2024",
-          "quality": "High resolution"
+          "quality": "High resolution",
+          "sold": false
         },
         {
           "type": "video",
@@ -188,7 +193,8 @@
           "medium": "Charcoal on paper",
           "dimensions": "24\" x 18\"",
           "year": "2024",
-          "quality": "High resolution"
+          "quality": "High resolution",
+          "sold": true
         }
       ]
     },
@@ -210,7 +216,8 @@
           "medium": "Bronze",
           "dimensions": "36\" x 24\" x 18\"",
           "year": "2023",
-          "quality": "High resolution"
+          "quality": "High resolution",
+          "sold": false
         }
       ]
     }

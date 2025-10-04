@@ -45,7 +45,6 @@ h1, h2, h3, h4, h5, h6 {
   font-family: 'Crimson Text', 'Times New Roman', serif;
   font-weight: 400;
   line-height: 1.2;
-  color: var(--text-color);
   margin-bottom: var(--spacing-md);
 }
 
@@ -61,11 +60,6 @@ h2 {
 
 h3 {
   font-size: 1.5rem;
-}
-
-p {
-  margin-bottom: var(--spacing-md);
-  color: var(--text-light);
 }
 
 a {
@@ -138,12 +132,57 @@ section {
   border-bottom: 2px solid transparent;
   transition: border-color var(--transition-speed);
   color: #FFFFFF; /* White text */
+  position: relative; /* for underline pseudo-element */
+  overflow: visible;
 }
 
 .nav-menu li a:hover,
 .nav-menu li a.active {
   border-bottom-color: var(--primary-color);
   color: #FFFFFF; /* Keep white on hover */
+}
+
+/* Animated white underline for nav links */
+.nav-menu li a::after {
+  content: '';
+  position: absolute;
+  left: 0.25rem;
+  right: 0.25rem;
+  bottom: -6px;
+  height: 2px;
+  background: rgba(255,255,255,0);
+  transform: scaleX(0);
+  transform-origin: center;
+  transition: transform var(--transition-speed), background var(--transition-speed);
+}
+
+.nav-menu li a:hover::after,
+.nav-menu li a.active::after {
+  transform: scaleX(1);
+  background: #FFFFFF;
+}
+
+/* Logo underline effect */
+.logo {
+  position: relative;
+}
+
+.logo::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -6px;
+  height: 2px;
+  background: rgba(255,255,255,0);
+  transform: scaleX(0);
+  transform-origin: center;
+  transition: transform var(--transition-speed), background var(--transition-speed);
+}
+
+.logo:hover::after {
+  transform: scaleX(1);
+  background: #FFFFFF;
 }
 
 /* Hero Section */
@@ -280,21 +319,35 @@ section {
   bottom: 0;
   left: 0;
   right: 0;
-  background: linear-gradient(transparent, rgba(0, 0, 0, 0.8));
-  color: white;
-  padding: var(--spacing-lg);
+  /* darker gradient for better contrast */
+  background: linear-gradient(#0000004b, rgba(0, 0, 0, 0.96));
+  color: #FFFFFF; /* explicit white text */
+  padding: 6px 20px;
   transform: translateY(100%);
-  transition: transform var(--transition-speed);
+  transition: transform var(--transition-speed), background var(--transition-speed);
 }
 
-.gallery-item:hover .overlay {
-  transform: translateY(0);
-}
-
-.gallery-item h3 {
-  font-size: 1.1rem;
+.item-status {
+  display: inline-block;
+  font-size: 0.85rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  padding: 0.25rem 0.5rem;
+  border-radius: var(--border-radius);
   margin-bottom: var(--spacing-xs);
-  font-weight: 500;
+  background-color: rgba(255, 255, 255, 0.2);
+  color: #FFFFFF;
+}
+
+.item-status.sold {
+  background-color: rgba(220, 20, 60, 0.8); /* Red background for sold items */
+  color: #FFFFFF;
+}
+
+.item-status.available {
+  background-color: rgba(34, 139, 34, 0.8); /* Green background for available items */
+  color: #FFFFFF;
 }
 
 .gallery-item p {
@@ -417,8 +470,7 @@ footer p {
   position: relative;
   margin: auto;
   display: flex;
-  justify-content: center;
-  align-items: center;
+  flex-direction: column;
   width: 95%;
   height: 95%;
   max-width: 1400px;
@@ -476,11 +528,12 @@ footer p {
 }
 
 .modal-media-container {
-  width: 100%;
-  height: 100%;
+  flex: 1;
   display: flex;
   justify-content: center;
   align-items: center;
+  padding: 2rem 0;
+  min-height: 60vh; /* Ensure minimum height for image display */
 }
 
 .modal-media-container img,
@@ -490,6 +543,66 @@ footer p {
   max-height: 100%;
   border-radius: var(--border-radius-large);
   box-shadow: var(--shadow-heavy);
+}
+
+.modal-data {
+  color: #FFFFFF;
+  padding: 0.5rem;
+  text-align: center;
+  flex-shrink: 0; /* Prevent shrinking */
+}
+
+.modal-data-content {
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.modal-title {
+  font-size: 1.5rem;
+  font-weight: 600;
+  margin-bottom: 0.25rem;
+  color: #FFFFFF;
+}
+
+.modal-status {
+  display: inline-block;
+  font-size: 0.9rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  padding: 0.25rem 0.75rem;
+  border-radius: var(--border-radius);
+  margin-bottom: 0.5rem;
+  background-color: rgba(255, 255, 255, 0.2);
+  color: #FFFFFF;
+}
+
+.modal-status.sold {
+  background-color: rgba(220, 20, 60, 0.8);
+}
+
+.modal-status.available {
+  background-color: rgba(34, 139, 34, 0.8);
+}
+
+.modal-details {
+  font-size: 1rem;
+  margin-bottom: 0.5rem;
+  opacity: 0.95;
+}
+
+.modal-medium,
+.modal-dimensions,
+.modal-year {
+  margin-right: 0.75rem;
+}
+
+.modal-description {
+  font-size: 0.95rem;
+  line-height: 1.5;
+  opacity: 0.9;
+  max-width: 600px;
+  margin: 0 auto;
 }
 
 /* Responsive Design */
@@ -782,20 +895,9 @@ main {
   transform: scale(1.05);
 }
 
-.gallery-item .overlay {
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  background: linear-gradient(transparent, rgba(0,0,0,0.7));
-  color: white;
-  padding: 20px;
-  transform: translateY(100%);
-  transition: transform var(--transition-speed);
-}
-
 .gallery-item:hover .overlay {
   transform: translateY(0);
+  background: linear-gradient(#0000004b, rgba(0, 0, 0, 0.96));
 }
 
 .gallery-item h3 {
@@ -1031,6 +1133,7 @@ footer p {
   margin: 0;
   font-size: 0.9rem;
   opacity: 0.9;
+  color: white;
 }
 
 .social-media {

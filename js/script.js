@@ -291,70 +291,15 @@ function populateGallery(galleryType) {
     if (h2 && pageData) h2.textContent = pageData.title;
 
     // Clear existing content
-    const embedContainer = gallery.querySelector('.embed-container');
     const galleryGrid = gallery.querySelector('.gallery-grid');
 
-    if (embedContainer) embedContainer.style.display = 'none';
     if (galleryGrid) galleryGrid.innerHTML = '';
 
-    // Populate media array
+    // Populate media array - all items as gallery items (same size)
     if (galleryData.media && galleryData.media.length > 0) {
-        galleryData.media.forEach((mediaItem, index) => {
-            if (index === 0) {
-                // First item: large and centered
-                populateFeaturedItem(mediaItem, gallery);
-            } else {
-                // Subsequent items: medium gallery items
-                populateGalleryItem(mediaItem, galleryGrid);
-            }
+        galleryData.media.forEach(mediaItem => {
+            populateGalleryItem(mediaItem, galleryGrid);
         });
-    }
-}
-
-function populateFeaturedItem(mediaItem, gallery) {
-    const embedContainer = gallery.querySelector('.embed-container');
-    if (!embedContainer) return;
-
-    embedContainer.style.display = 'block';
-
-    // Add click handler to open modal
-    embedContainer.style.cursor = 'pointer';
-    embedContainer.addEventListener('click', () => openModal(mediaItem));
-
-    if (mediaItem.type === 'video') {
-        if (isLocalVideo(mediaItem.url)) {
-            // Local video file
-            embedContainer.innerHTML = `
-                <video controls style="width: 100%; height: auto; max-height: 600px;">
-                    <source src="${mediaItem.url}" type="video/mp4">
-                    Your browser does not support the video tag.
-                </video>
-            `;
-        } else {
-            // Embed URL (YouTube, etc.)
-            const iframe = embedContainer.querySelector('iframe');
-            if (iframe) {
-                iframe.src = mediaItem.url;
-                iframe.title = mediaItem.title;
-            }
-        }
-    } else if (mediaItem.type === 'render3d') {
-        const iframe = embedContainer.querySelector('iframe');
-        if (iframe) {
-            iframe.src = mediaItem.url;
-            iframe.title = mediaItem.title;
-        }
-    } else if (mediaItem.type === 'image') {
-        // For featured image, create a large image display
-        embedContainer.innerHTML = `
-            <div class="featured-image-container">
-                <img src="${mediaItem.url}" alt="${mediaItem.title}" style="width: 100%; height: auto; max-height: 600px; object-fit: contain;">
-                <div class="featured-overlay">
-                    <h3>${mediaItem.title}</h3>
-                    <p>${mediaItem.medium}, ${mediaItem.dimensions}, ${mediaItem.year}</p>
-                </div>
-            </div>
-        `;
     }
 }
 
@@ -381,10 +326,15 @@ function populateGalleryItem(mediaItem, galleryGrid) {
         const h3 = document.createElement('h3');
         h3.textContent = mediaItem.title;
 
+        const status = document.createElement('div');
+        status.className = `item-status ${mediaItem.sold ? 'sold' : 'available'}`;
+        status.textContent = mediaItem.sold ? 'Sold' : 'Available';
+
         const p = document.createElement('p');
         p.textContent = `${mediaItem.medium}, ${mediaItem.dimensions}, ${mediaItem.year}`;
 
         overlay.appendChild(h3);
+        overlay.appendChild(status);
         overlay.appendChild(p);
 
         item.appendChild(img);
@@ -500,8 +450,9 @@ function showNextMedia() {
 function openModal(mediaItem) {
     const modal = document.getElementById('media-modal');
     const modalMediaContainer = document.querySelector('.modal-media-container');
+    const modalData = document.querySelector('.modal-data');
 
-    if (!modal || !modalMediaContainer) return;
+    if (!modal || !modalMediaContainer || !modalData) return;
 
     // Set current media tracking
     const galleryType = getCurrentGalleryType();
@@ -514,6 +465,7 @@ function openModal(mediaItem) {
 
     // Clear previous content
     modalMediaContainer.innerHTML = '';
+    modalData.innerHTML = '';
 
     // Create media element based on type
     let mediaElement;
@@ -544,6 +496,22 @@ function openModal(mediaItem) {
 
     if (mediaElement) {
         modalMediaContainer.appendChild(mediaElement);
+
+        // Add data information
+        const dataHTML = `
+            <div class="modal-data-content">
+                <h2 class="modal-title">${mediaItem.title}</h2>
+                <div class="modal-status ${mediaItem.sold ? 'sold' : 'available'}">${mediaItem.sold ? 'Sold' : 'Available'}</div>
+                <div class="modal-details">
+                    ${mediaItem.medium ? `<span class="modal-medium">${mediaItem.medium}</span>` : ''}
+                    ${mediaItem.dimensions ? `<span class="modal-dimensions">${mediaItem.dimensions}</span>` : ''}
+                    ${mediaItem.year ? `<span class="modal-year">${mediaItem.year}</span>` : ''}
+                </div>
+                ${mediaItem.description ? `<p class="modal-description">${mediaItem.description}</p>` : ''}
+            </div>
+        `;
+        modalData.innerHTML = dataHTML;
+
         modal.style.display = 'block';
     }
 }
