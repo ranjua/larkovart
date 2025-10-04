@@ -1,0 +1,17 @@
+{
+  "name": "larkovart-tests",
+  "version": "1.0.0",
+  "description": "Playwright tests for Larkova Art website structure validation",
+  "main": "index.js",
+  "scripts": {
+    "test": "playwright test",
+    "test:headed": "playwright test --headed",
+    "test:debug": "playwright test --debug"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.40.0"
+  },
+  "keywords": ["testing", "playwright", "website", "validation"],
+  "author": "Larkova Art",
+  "license": "MIT"
+}

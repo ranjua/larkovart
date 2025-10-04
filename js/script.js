@@ -1,6 +1,415 @@
 // Modern Artist Website JavaScript
 
-document.addEventListener('DOMContentLoaded', function() {
+let config = null;
+
+// Load header HTML
+async function loadHeader() {
+    try {
+        const response = await fetch('header.html');
+        const headerHTML = await response.text();
+        const body = document.body;
+        body.insertAdjacentHTML('afterbegin', headerHTML);
+        return true;
+    } catch (error) {
+        console.error('Error loading header:', error);
+        return false;
+    }
+}
+
+// Load footer HTML
+async function loadFooter() {
+    try {
+        const response = await fetch('footer.html');
+        const footerHTML = await response.text();
+        const body = document.body;
+        body.insertAdjacentHTML('beforeend', footerHTML);
+        return true;
+    } catch (error) {
+        console.error('Error loading footer:', error);
+        return false;
+    }
+}
+
+// Load configuration
+async function loadConfig() {
+    try {
+        const response = await fetch('config.json');
+        config = await response.json();
+        console.log('Config loaded:', config);
+        return config;
+    } catch (error) {
+        console.error('Error loading config:', error);
+        return null;
+    }
+}
+
+// Populate navigation
+function populateNavigation() {
+    if (!config) return;
+
+    const navContainer = document.querySelector('.nav-container');
+    if (!navContainer) return;
+
+    // Update logo
+    const logo = navContainer.querySelector('.logo');
+    if (logo) logo.textContent = config.general.siteTitle;
+
+    // Update nav menu
+    const navMenu = navContainer.querySelector('.nav-menu');
+    if (navMenu) {
+        navMenu.innerHTML = '';
+        config.general.navigation.forEach(item => {
+            const li = document.createElement('li');
+            const a = document.createElement('a');
+            a.href = item.url;
+            a.textContent = item.label;
+            li.appendChild(a);
+            navMenu.appendChild(li);
+        });
+    }
+
+    // Update nav social media
+    const navSocial = navContainer.querySelector('.nav-social');
+    if (navSocial && config.general.socialMedia) {
+        navSocial.innerHTML = '';
+        config.general.socialMedia.forEach(social => {
+            const link = document.createElement('a');
+            link.href = social.url;
+            link.target = '_blank';
+            link.rel = 'noopener noreferrer';
+            link.title = `${social.platform} - ${config.general.artistName}`;
+            link.className = 'nav-social-link';
+
+            const icon = document.createElement('img');
+            icon.className = 'social-icon';
+            icon.src = social.icon;
+            icon.alt = `${social.platform} icon`;
+            icon.loading = 'lazy';
+
+            link.appendChild(icon);
+            navSocial.appendChild(link);
+        });
+    }
+}
+
+// Populate hero section
+function populateHero() {
+    if (!config) return;
+
+    const heroContent = document.querySelector('.hero-content');
+    if (!heroContent) return;
+
+    const h1 = heroContent.querySelector('h1');
+    const p = heroContent.querySelector('p');
+    const cta = heroContent.querySelector('.cta-button');
+
+    if (h1) h1.textContent = config.general.heroTitle;
+    if (p) p.textContent = config.general.heroSubtitle;
+    if (cta) {
+        cta.textContent = config.general.ctaText;
+        cta.href = config.general.ctaUrl;
+    }
+}
+
+// Populate bio preview section (for homepage)
+function populateBioPreview() {
+    if (!config) return;
+
+    const bioContent = document.querySelector('.bio-content');
+    if (!bioContent) return;
+
+    const bioPreview = config.general.bioPreview;
+
+    // Update bio text
+    const bioText = bioContent.querySelector('.bio-text');
+    if (bioText) {
+        const h2 = bioText.querySelector('h2');
+        const paragraphs = bioText.querySelectorAll('p');
+        const cta = bioText.querySelector('.cta-button');
+
+        if (h2) h2.textContent = bioPreview.title;
+        if (paragraphs.length >= 2) {
+            paragraphs[0].textContent = bioPreview.description1;
+            paragraphs[1].textContent = bioPreview.description2;
+        }
+        if (cta) {
+            cta.textContent = bioPreview.ctaText;
+            cta.href = bioPreview.ctaUrl;
+        }
+    }
+
+    // Update bio image
+    const bioImage = bioContent.querySelector('.bio-image');
+    if (bioImage) {
+        bioImage.src = bioPreview.imageUrl;
+        bioImage.alt = bioPreview.imageAlt;
+    }
+}
+
+// Populate footer
+function populateFooter() {
+    if (!config) return;
+
+    const footer = document.querySelector('footer');
+    if (!footer) return;
+
+    // Populate footer text
+    const footerText = footer.querySelector('p');
+    if (footerText) footerText.innerHTML = config.general.footerText;
+
+    // Populate social media links
+    const socialMediaContainer = footer.querySelector('.social-media');
+    if (socialMediaContainer && config.general.socialMedia) {
+        socialMediaContainer.innerHTML = '';
+        config.general.socialMedia.forEach(social => {
+            const link = document.createElement('a');
+            link.href = social.url;
+            link.target = '_blank';
+            link.rel = 'noopener noreferrer';
+            link.title = `${social.platform} - ${config.general.artistName}`;
+            link.className = 'social-link';
+            link.setAttribute('data-platform', social.platform.toLowerCase());
+
+            const icon = document.createElement('img');
+            icon.className = 'social-icon';
+            icon.src = social.icon;
+            icon.alt = `${social.platform} icon`;
+            icon.loading = 'lazy';
+
+            link.appendChild(icon);
+            socialMediaContainer.appendChild(link);
+        });
+    }
+}
+
+// Populate bio section
+function populateBio() {
+    if (!config) return;
+
+    const bioContent = document.querySelector('.bio-content');
+    if (!bioContent) return;
+
+    const bioData = config.pages.bio;
+
+    // Update page title and meta description
+    document.title = `${bioData.title} - ${config.general.siteTitle}`;
+    const metaDesc = document.querySelector('meta[name="description"]');
+    if (metaDesc) metaDesc.content = bioData.description;
+
+    // Update main heading (h2 is a sibling of bio-content, not inside it)
+    const bioSection = document.querySelector('.bio');
+    const mainHeading = bioSection ? bioSection.querySelector('h2') : null;
+    if (mainHeading) mainHeading.textContent = bioData.title;
+
+    // Update bio text sections
+    const bioText = bioContent.querySelector('.bio-text');
+    if (bioText && bioData.sections) {
+        // Clear existing content except the main heading
+        const existingHeading = bioText.querySelector('h2');
+        bioText.innerHTML = '';
+        if (existingHeading) bioText.appendChild(existingHeading);
+
+        bioData.sections.forEach(section => {
+            const heading = document.createElement('h3');
+            heading.textContent = section.heading;
+
+            const paragraph = document.createElement('p');
+            paragraph.textContent = section.content;
+
+            bioText.appendChild(heading);
+            bioText.appendChild(paragraph);
+        });
+
+        // Add CTA button
+        const ctaButton = document.createElement('a');
+        ctaButton.href = config.general.bioPreview.ctaUrl;
+        ctaButton.className = 'cta-button';
+        ctaButton.textContent = config.general.bioPreview.ctaText;
+        bioText.appendChild(ctaButton);
+    }
+
+    // Update bio image
+    const bioImage = bioContent.querySelector('.bio-image');
+    if (bioImage) {
+        bioImage.src = config.general.bioPreview.imageUrl;
+        bioImage.alt = config.general.bioPreview.imageAlt;
+    }
+
+    // Add artist statement section
+    if (bioData.artistStatement) {
+        const artistStatementSection = document.createElement('div');
+        artistStatementSection.style.marginTop = '3rem';
+        artistStatementSection.style.textAlign = 'center';
+
+        const statementTitle = document.createElement('h3');
+        statementTitle.textContent = bioData.artistStatement.title;
+
+        const quote = document.createElement('blockquote');
+        quote.style.fontStyle = 'italic';
+        quote.style.fontSize = '1.2rem';
+        quote.style.color = 'var(--primary-color)';
+        quote.style.margin = '2rem 0';
+        quote.style.maxWidth = '600px';
+        quote.style.marginLeft = 'auto';
+        quote.style.marginRight = 'auto';
+        quote.textContent = bioData.artistStatement.quote;
+
+        const attribution = document.createElement('p');
+        attribution.style.marginTop = '2rem';
+        attribution.textContent = bioData.artistStatement.attribution;
+
+        artistStatementSection.appendChild(statementTitle);
+        artistStatementSection.appendChild(quote);
+        artistStatementSection.appendChild(attribution);
+
+        bioContent.parentNode.insertBefore(artistStatementSection, bioContent.nextSibling);
+    }
+}
+
+// Populate gallery
+function populateGallery(galleryType) {
+    if (!config || !config.assets[galleryType]) return;
+
+    const gallery = document.querySelector('.gallery');
+    if (!gallery) return;
+
+    const galleryData = config.assets[galleryType];
+    const pageData = config.pages[galleryType];
+
+    // Update page title and meta description
+    if (pageData) {
+        document.title = `${pageData.title} - ${config.general.siteTitle}`;
+        const metaDesc = document.querySelector('meta[name="description"]');
+        if (metaDesc) metaDesc.content = pageData.description;
+    }
+
+    // Update title
+    const h2 = gallery.querySelector('h2');
+    if (h2 && pageData) h2.textContent = pageData.title;
+
+    // Populate video
+    if (galleryData.video) {
+        const embedContainer = gallery.querySelector('.embed-container');
+        if (embedContainer && embedContainer.querySelector('iframe')) {
+            const iframe = embedContainer.querySelector('iframe');
+            iframe.src = galleryData.video.url;
+            iframe.title = galleryData.video.title;
+        }
+    }
+
+    // Populate images
+    const galleryGrid = gallery.querySelector('.gallery-grid');
+    if (galleryGrid && galleryData.images) {
+        galleryGrid.innerHTML = '';
+        galleryData.images.forEach(image => {
+            const item = document.createElement('div');
+            item.className = 'gallery-item';
+
+            const img = document.createElement('img');
+            img.src = image.url;
+            img.alt = image.title;
+            img.loading = 'lazy';
+
+            const overlay = document.createElement('div');
+            overlay.className = 'overlay';
+
+            const h3 = document.createElement('h3');
+            h3.textContent = image.title;
+
+            const p = document.createElement('p');
+            p.textContent = `${image.medium}, ${image.dimensions}, ${image.year}`;
+
+            overlay.appendChild(h3);
+            overlay.appendChild(p);
+
+            item.appendChild(img);
+            item.appendChild(overlay);
+
+            galleryGrid.appendChild(item);
+        });
+    }
+
+    // Populate 3D render (only for sculptures)
+    if (galleryData.render3d) {
+        const embedContainers = gallery.querySelectorAll('.embed-container');
+        if (embedContainers.length > 1) {
+            const renderContainer = embedContainers[1];
+            if (renderContainer && renderContainer.querySelector('iframe')) {
+                const iframe = renderContainer.querySelector('iframe');
+                iframe.src = galleryData.render3d.url;
+                iframe.title = galleryData.render3d.title;
+            }
+        }
+    }
+}
+
+
+
+document.addEventListener('DOMContentLoaded', async function() {
+    // Load header first
+    await loadHeader();
+
+    // Then load config and initialize page
+    await loadConfig();
+    if (config) {
+        // Set default page title and meta
+        document.title = config.general.siteTitle;
+        const metaDesc = document.querySelector('meta[name="description"]');
+        if (metaDesc) metaDesc.content = config.general.metaDescription;
+
+        populateNavigation();
+        populateFooter();
+
+        // Page-specific initialization
+        const path = window.location.pathname;
+        if (path.includes('index.html') || path === '/' || path.endsWith('larkovart/')) {
+            populateHero();
+            populateBioPreview();
+            // Populate featured works title
+            const featuredTitle = document.querySelector('.gallery h2');
+            if (featuredTitle) featuredTitle.textContent = config.general.featuredTitle;
+            // Populate featured works (could be first few from paintings)
+            const featuredGrid = document.querySelector('.gallery-grid');
+            if (featuredGrid && config.assets.paintings && config.assets.paintings.images) {
+                featuredGrid.innerHTML = '';
+                config.assets.paintings.images.slice(0, 3).forEach(image => {
+                    const item = document.createElement('div');
+                    item.className = 'gallery-item';
+
+                    const img = document.createElement('img');
+                    img.src = image.url;
+                    img.alt = image.title;
+                    img.loading = 'lazy';
+
+                    const overlay = document.createElement('div');
+                    overlay.className = 'overlay';
+
+                    const h3 = document.createElement('h3');
+                    h3.textContent = image.title;
+
+                    const p = document.createElement('p');
+                    p.textContent = `${image.medium}, ${image.year}`;
+
+                    overlay.appendChild(h3);
+                    overlay.appendChild(p);
+
+                    item.appendChild(img);
+                    item.appendChild(overlay);
+
+                    featuredGrid.appendChild(item);
+                });
+            }
+        } else if (path.includes('bio.html')) {
+            populateBio();
+        } else if (path.includes('paintings.html')) {
+            populateGallery('paintings');
+        } else if (path.includes('drawings.html')) {
+            populateGallery('drawings');
+        } else if (path.includes('sculptures.html')) {
+            populateGallery('sculptures');
+        }
+    }
+
     // Mobile Navigation Toggle
     const hamburger = document.querySelector('.hamburger');
     const navMenu = document.querySelector('.nav-menu');
@@ -13,17 +422,15 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     // Smooth Scrolling for Navigation Links
-    const navLinks = document.querySelectorAll('.nav-menu a[href^="#"]');
-
-    navLinks.forEach(link => {
-        link.addEventListener('click', function(e) {
+    document.addEventListener('click', function(e) {
+        if (e.target.matches('.nav-menu a[href^="#"]')) {
             e.preventDefault();
 
-            const targetId = this.getAttribute('href').substring(1);
+            const targetId = e.target.getAttribute('href').substring(1);
             const targetElement = document.getElementById(targetId);
 
             if (targetElement) {
-                const offsetTop = targetElement.offsetTop - 80; // Account for fixed navbar
+                const offsetTop = targetElement.offsetTop - 80;
 
                 window.scrollTo({
                     top: offsetTop,
@@ -36,19 +443,18 @@ document.addEventListener('DOMContentLoaded', function() {
                 navMenu.classList.remove('active');
                 hamburger.classList.remove('active');
             }
-        });
+        }
     });
 
     // Gallery Image Modal/Lightbox
-    const galleryItems = document.querySelectorAll('.gallery-item');
-
-    galleryItems.forEach(item => {
-        item.addEventListener('click', function() {
-            const img = this.querySelector('img');
+    document.addEventListener('click', function(e) {
+        if (e.target.closest('.gallery-item')) {
+            const item = e.target.closest('.gallery-item');
+            const img = item.querySelector('img');
             if (img) {
                 openLightbox(img.src, img.alt);
             }
-        });
+        }
     });
 
     // Intersection Observer for Animations
@@ -191,4 +597,72 @@ let scrollTimer;
 window.addEventListener('scroll', function() {
     clearTimeout(scrollTimer);
     scrollTimer = setTimeout(animateOnScroll, 16);
+});
+
+// Initialize the page when DOM is loaded
+document.addEventListener('DOMContentLoaded', async function() {
+    // Load header and footer
+    await loadHeader();
+    await loadFooter();
+
+    // Then load config and initialize page
+    await loadConfig();
+    if (config) {
+        // Set default page title and meta
+        document.title = config.general.siteTitle;
+        const metaDesc = document.querySelector('meta[name="description"]');
+        if (metaDesc) metaDesc.content = config.general.metaDescription;
+
+        populateNavigation();
+        populateFooter();
+
+        // Page-specific initialization
+        const path = window.location.pathname;
+        if (path.includes('index.html') || path === '/' || path.endsWith('larkovart/')) {
+            populateHero();
+            populateBioPreview();
+            // Populate featured works title
+            const featuredTitle = document.querySelector('.gallery h2');
+            if (featuredTitle) featuredTitle.textContent = config.general.featuredTitle;
+            // Populate featured works (could be first few from paintings)
+            const featuredGrid = document.querySelector('.gallery-grid');
+            if (featuredGrid && config.assets.paintings && config.assets.paintings.images) {
+                featuredGrid.innerHTML = '';
+                config.assets.paintings.images.slice(0, 3).forEach(image => {
+                    const item = document.createElement('div');
+                    item.className = 'gallery-item';
+
+                    const img = document.createElement('img');
+                    img.src = image.url;
+                    img.alt = image.title;
+                    img.loading = 'lazy';
+
+                    const overlay = document.createElement('div');
+                    overlay.className = 'overlay';
+
+                    const h3 = document.createElement('h3');
+                    h3.textContent = image.title;
+
+                    const p = document.createElement('p');
+                    p.textContent = `${image.medium}, ${image.year}`;
+
+                    overlay.appendChild(h3);
+                    overlay.appendChild(p);
+
+                    item.appendChild(img);
+                    item.appendChild(overlay);
+
+                    featuredGrid.appendChild(item);
+                });
+            }
+        } else if (path.includes('bio.html')) {
+            populateBio();
+        } else if (path.includes('paintings.html')) {
+            populateGallery('paintings');
+        } else if (path.includes('drawings.html')) {
+            populateGallery('drawings');
+        } else if (path.includes('sculptures.html')) {
+            populateGallery('sculptures');
+        }
+    }
 });

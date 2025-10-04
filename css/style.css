@@ -53,6 +53,39 @@ body {
   text-decoration: none;
 }
 
+.nav-social {
+  display: flex;
+  gap: 0.5rem;
+  margin-left: 1rem;
+}
+
+.nav-social-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  background-color: rgba(255, 255, 255, 0.1);
+  border-radius: 50%;
+  color: white;
+  text-decoration: none;
+  transition: all var(--transition-speed) ease;
+}
+
+.nav-social-link .social-icon {
+  width: 16px;
+  height: 16px;
+  filter: brightness(0) invert(1); /* Make icons white */
+}
+
+.nav-social-link:hover {
+  background-color: rgba(255, 255, 255, 0.2);
+}
+
+.nav-social-link:hover .social-icon {
+  filter: brightness(0) invert(1) sepia(1) saturate(5) hue-rotate(25deg); /* Make icons golden on hover */
+}
+
 .nav-menu {
   display: flex;
   list-style: none;
@@ -365,5 +398,85 @@ footer {
 
   .hero p {
     font-size: 1rem;
+  }
+}
+
+/* Footer */
+footer {
+  background-color: var(--primary-color);
+  color: white;
+  padding: 2rem 0 1rem;
+  margin-top: 4rem;
+}
+
+.footer-content {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+footer p {
+  margin: 0;
+  font-size: 0.9rem;
+  opacity: 0.9;
+}
+
+.social-media {
+  display: flex;
+  gap: 1rem;
+}
+
+.social-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  background-color: rgba(255, 255, 255, 0.1);
+  border-radius: 50%;
+  color: white;
+  text-decoration: none;
+  transition: all var(--transition-speed) ease;
+}
+
+.social-link .social-icon {
+  width: 20px;
+  height: 20px;
+  filter: brightness(0) invert(1); /* Make icons white */
+}
+
+.social-link:hover {
+  background-color: rgba(255, 255, 255, 0.2);
+  transform: translateY(-2px);
+}
+
+.social-link:hover .social-icon {
+  filter: brightness(0) invert(1) sepia(1) saturate(5) hue-rotate(25deg); /* Make icons golden on hover */
+}
+
+.social-link:focus {
+  outline: 2px solid var(--accent-color);
+  outline-offset: 2px;
+}
+
+/* Responsive footer */
+@media (max-width: 768px) {
+  .footer-content {
+    flex-direction: column;
+    text-align: center;
+    gap: 1.5rem;
+  }
+
+  .social-media {
+    justify-content: center;
+  }
+
+  .nav-social {
+    display: none; /* Hide nav social on mobile to save space */
   }
 }

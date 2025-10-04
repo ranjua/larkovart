@@ -27,10 +27,11 @@ larkovart/
 ├── paintings.html     # Paintings gallery with 5 artworks
 ├── drawings.html      # Drawings gallery with 5 artworks
 ├── sculptures.html    # Sculptures gallery with 3 artworks
+├── config.json        # Centralized configuration file
 ├── css/
 │   └── style.css      # Main stylesheet with olive green theme
 ├── js/
-│   └── script.js      # JavaScript for interactivity
+│   └── script.js      # JavaScript for interactivity and config loading
 ├── images/            # Directory for artwork images
 ├── .gitignore         # Git ignore file
 └── README.md          # This file
@@ -67,6 +68,18 @@ larkovart/
 - **Background**: Beige (#F5F5DC)
 - **Text**: Dark Green (#2F4F2F)
 
+## Configuration
+
+The website is fully configurable through `config.json`. This centralized configuration file contains:
+
+- **General Settings**: Site title, artist name, colors, navigation, footer
+- **Assets Configuration**: 
+  - **Paintings**: Video embed, 5 images with metadata, no 3D render
+  - **Drawings**: Video embed, 5 images with metadata, no 3D render  
+  - **Sculptures**: Video embed, 3 images with metadata, 3D render embed
+
+Each asset includes properties like title, URL, description, medium, dimensions, year, and quality. To update content, simply edit `config.json` - no code changes needed. The HTML files are now template-based and populate content dynamically from the configuration.
+
 ## Features Implemented
 
 - ✅ Responsive navigation with mobile hamburger menu
@@ -74,10 +87,12 @@ larkovart/
 - ✅ Gallery lightbox for image viewing
 - ✅ Hover effects and animations
 - ✅ Embedded YouTube videos in galleries
-- ✅ Sketchfab 3D model embeds
+- ✅ Sketchfab 3D model embeds (sculptures only)
 - ✅ Intersection Observer for scroll animations
 - ✅ Lazy loading for images
 - ✅ Parallax effects on hero section
+- ✅ Centralized configuration management
+- ✅ Dynamic HTML content generation from config.json
 
 ## Browser Support
 
