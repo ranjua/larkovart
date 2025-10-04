@@ -59,6 +59,9 @@ function populateNavigation() {
     if (navMenu) {
         navMenu.innerHTML = '';
         config.general.navigation.forEach(item => {
+            // Skip hidden navigation items
+            if (item.hidden === true) return;
+
             const li = document.createElement('li');
             const a = document.createElement('a');
             a.href = item.url;
@@ -287,60 +290,318 @@ function populateGallery(galleryType) {
     const h2 = gallery.querySelector('h2');
     if (h2 && pageData) h2.textContent = pageData.title;
 
-    // Populate video
-    if (galleryData.video) {
-        const embedContainer = gallery.querySelector('.embed-container');
-        if (embedContainer && embedContainer.querySelector('iframe')) {
-            const iframe = embedContainer.querySelector('iframe');
-            iframe.src = galleryData.video.url;
-            iframe.title = galleryData.video.title;
-        }
-    }
-
-    // Populate images
+    // Clear existing content
+    const embedContainer = gallery.querySelector('.embed-container');
     const galleryGrid = gallery.querySelector('.gallery-grid');
-    if (galleryGrid && galleryData.images) {
-        galleryGrid.innerHTML = '';
-        galleryData.images.forEach(image => {
-            const item = document.createElement('div');
-            item.className = 'gallery-item';
 
-            const img = document.createElement('img');
-            img.src = image.url;
-            img.alt = image.title;
-            img.loading = 'lazy';
+    if (embedContainer) embedContainer.style.display = 'none';
+    if (galleryGrid) galleryGrid.innerHTML = '';
 
-            const overlay = document.createElement('div');
-            overlay.className = 'overlay';
-
-            const h3 = document.createElement('h3');
-            h3.textContent = image.title;
-
-            const p = document.createElement('p');
-            p.textContent = `${image.medium}, ${image.dimensions}, ${image.year}`;
-
-            overlay.appendChild(h3);
-            overlay.appendChild(p);
-
-            item.appendChild(img);
-            item.appendChild(overlay);
-
-            galleryGrid.appendChild(item);
+    // Populate media array
+    if (galleryData.media && galleryData.media.length > 0) {
+        galleryData.media.forEach((mediaItem, index) => {
+            if (index === 0) {
+                // First item: large and centered
+                populateFeaturedItem(mediaItem, gallery);
+            } else {
+                // Subsequent items: medium gallery items
+                populateGalleryItem(mediaItem, galleryGrid);
+            }
         });
     }
+}
 
-    // Populate 3D render (only for sculptures)
-    if (galleryData.render3d) {
-        const embedContainers = gallery.querySelectorAll('.embed-container');
-        if (embedContainers.length > 1) {
-            const renderContainer = embedContainers[1];
-            if (renderContainer && renderContainer.querySelector('iframe')) {
-                const iframe = renderContainer.querySelector('iframe');
-                iframe.src = galleryData.render3d.url;
-                iframe.title = galleryData.render3d.title;
+function populateFeaturedItem(mediaItem, gallery) {
+    const embedContainer = gallery.querySelector('.embed-container');
+    if (!embedContainer) return;
+
+    embedContainer.style.display = 'block';
+
+    // Add click handler to open modal
+    embedContainer.style.cursor = 'pointer';
+    embedContainer.addEventListener('click', () => openModal(mediaItem));
+
+    if (mediaItem.type === 'video') {
+        if (isLocalVideo(mediaItem.url)) {
+            // Local video file
+            embedContainer.innerHTML = `
+                <video controls style="width: 100%; height: auto; max-height: 600px;">
+                    <source src="${mediaItem.url}" type="video/mp4">
+                    Your browser does not support the video tag.
+                </video>
+            `;
+        } else {
+            // Embed URL (YouTube, etc.)
+            const iframe = embedContainer.querySelector('iframe');
+            if (iframe) {
+                iframe.src = mediaItem.url;
+                iframe.title = mediaItem.title;
             }
         }
+    } else if (mediaItem.type === 'render3d') {
+        const iframe = embedContainer.querySelector('iframe');
+        if (iframe) {
+            iframe.src = mediaItem.url;
+            iframe.title = mediaItem.title;
+        }
+    } else if (mediaItem.type === 'image') {
+        // For featured image, create a large image display
+        embedContainer.innerHTML = `
+            <div class="featured-image-container">
+                <img src="${mediaItem.url}" alt="${mediaItem.title}" style="width: 100%; height: auto; max-height: 600px; object-fit: contain;">
+                <div class="featured-overlay">
+                    <h3>${mediaItem.title}</h3>
+                    <p>${mediaItem.medium}, ${mediaItem.dimensions}, ${mediaItem.year}</p>
+                </div>
+            </div>
+        `;
     }
+}
+
+function isLocalVideo(url) {
+    // Check if URL ends with common video file extensions
+    return /\.(mp4|webm|ogg|avi|mov|wmv|flv|m4v)$/i.test(url);
+}
+
+function populateGalleryItem(mediaItem, galleryGrid) {
+    if (!galleryGrid) return;
+
+    const item = document.createElement('div');
+    item.className = 'gallery-item';
+
+    if (mediaItem.type === 'image') {
+        const img = document.createElement('img');
+        img.src = mediaItem.url;
+        img.alt = mediaItem.title;
+        img.loading = 'lazy';
+
+        const overlay = document.createElement('div');
+        overlay.className = 'overlay';
+
+        const h3 = document.createElement('h3');
+        h3.textContent = mediaItem.title;
+
+        const p = document.createElement('p');
+        p.textContent = `${mediaItem.medium}, ${mediaItem.dimensions}, ${mediaItem.year}`;
+
+        overlay.appendChild(h3);
+        overlay.appendChild(p);
+
+        item.appendChild(img);
+        item.appendChild(overlay);
+    } else if (mediaItem.type === 'video') {
+        if (isLocalVideo(mediaItem.url)) {
+            // Local video file
+            item.innerHTML = `
+                <video controls style="width: 100%; height: 250px; object-fit: cover;">
+                    <source src="${mediaItem.url}" type="video/mp4">
+                    Your browser does not support the video tag.
+                </video>
+                <div class="overlay">
+                    <h3>${mediaItem.title}</h3>
+                    <p>${mediaItem.description}</p>
+                </div>
+            `;
+        } else {
+            // Embed URL (YouTube, etc.)
+            item.innerHTML = `
+                <div class="embed-container-small">
+                    <iframe src="${mediaItem.url}" title="${mediaItem.title}" allowfullscreen></iframe>
+                </div>
+                <div class="overlay">
+                    <h3>${mediaItem.title}</h3>
+                    <p>${mediaItem.description}</p>
+                </div>
+            `;
+        }
+    } else if (mediaItem.type === 'render3d') {
+        // For renders in gallery grid, create an iframe container
+        item.innerHTML = `
+            <div class="embed-container-small">
+                <iframe src="${mediaItem.url}" title="${mediaItem.title}" allowfullscreen></iframe>
+            </div>
+            <div class="overlay">
+                <h3>${mediaItem.title}</h3>
+                <p>${mediaItem.description}</p>
+            </div>
+        `;
+    }
+
+    galleryGrid.appendChild(item);
+
+    // Add click handler to open modal
+    item.addEventListener('click', () => openModal(mediaItem));
+}
+
+// Modal functionality
+let currentMediaIndex = -1;
+let currentMediaArray = [];
+
+function initModal() {
+    const modal = document.getElementById('media-modal');
+    const modalClose = document.querySelector('.modal-close');
+    const modalPrev = document.querySelector('.modal-prev');
+    const modalNext = document.querySelector('.modal-next');
+    const modalMediaContainer = document.querySelector('.modal-media-container');
+
+    if (!modal || !modalClose || !modalMediaContainer) return;
+
+    // Close modal when clicking the close button
+    modalClose.addEventListener('click', closeModal);
+
+    // Close modal when clicking outside the content
+    modal.addEventListener('click', function(e) {
+        if (e.target === modal) {
+            closeModal();
+        }
+    });
+
+    // Navigation arrows
+    if (modalPrev) {
+        modalPrev.addEventListener('click', showPrevMedia);
+    }
+    if (modalNext) {
+        modalNext.addEventListener('click', showNextMedia);
+    }
+
+    // Close modal on Escape key, navigate with arrow keys
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape' && modal.style.display === 'block') {
+            closeModal();
+        } else if (e.key === 'ArrowLeft' && modal.style.display === 'block') {
+            showPrevMedia();
+        } else if (e.key === 'ArrowRight' && modal.style.display === 'block') {
+            showNextMedia();
+        }
+    });
+
+    function closeModal() {
+        modal.style.display = 'none';
+        modalMediaContainer.innerHTML = '';
+        currentMediaIndex = -1;
+        currentMediaArray = [];
+    }
+}
+
+function showPrevMedia() {
+    if (currentMediaArray.length > 0 && currentMediaIndex > 0) {
+        currentMediaIndex--;
+        openModal(currentMediaArray[currentMediaIndex]);
+    }
+}
+
+function showNextMedia() {
+    if (currentMediaArray.length > 0 && currentMediaIndex < currentMediaArray.length - 1) {
+        currentMediaIndex++;
+        openModal(currentMediaArray[currentMediaIndex]);
+    }
+}
+
+function openModal(mediaItem) {
+    const modal = document.getElementById('media-modal');
+    const modalMediaContainer = document.querySelector('.modal-media-container');
+
+    if (!modal || !modalMediaContainer) return;
+
+    // Set current media tracking
+    const galleryType = getCurrentGalleryType();
+    if (galleryType && config && config.assets[galleryType]) {
+        currentMediaArray = config.assets[galleryType].media;
+        currentMediaIndex = currentMediaArray.findIndex(item =>
+            item.url === mediaItem.url && item.title === mediaItem.title
+        );
+    }
+
+    // Clear previous content
+    modalMediaContainer.innerHTML = '';
+
+    // Create media element based on type
+    let mediaElement;
+
+    if (mediaItem.type === 'image') {
+        mediaElement = document.createElement('img');
+        mediaElement.src = mediaItem.url;
+        mediaElement.alt = mediaItem.title;
+    } else if (mediaItem.type === 'video') {
+        if (isLocalVideo(mediaItem.url)) {
+            mediaElement = document.createElement('video');
+            mediaElement.src = mediaItem.url;
+            mediaElement.controls = true;
+            mediaElement.autoplay = false;
+        } else {
+            // Embed video
+            mediaElement = document.createElement('iframe');
+            mediaElement.src = mediaItem.url;
+            mediaElement.allowfullscreen = true;
+            mediaElement.title = mediaItem.title;
+        }
+    } else if (mediaItem.type === 'render3d') {
+        mediaElement = document.createElement('iframe');
+        mediaElement.src = mediaItem.url;
+        mediaElement.allowfullscreen = true;
+        mediaElement.title = mediaItem.title;
+    }
+
+    if (mediaElement) {
+        modalMediaContainer.appendChild(mediaElement);
+        modal.style.display = 'block';
+    }
+}
+
+function addGalleryItemClickHandlers() {
+    // Add click handlers to gallery items
+    document.addEventListener('click', function(e) {
+        const galleryItem = e.target.closest('.gallery-item');
+        if (galleryItem) {
+            // Find the media item data from the gallery item
+            const img = galleryItem.querySelector('img');
+            const video = galleryItem.querySelector('video');
+            const iframe = galleryItem.querySelector('iframe');
+
+            let mediaItem = null;
+
+            // Get current gallery type and find the corresponding media item
+            const galleryType = getCurrentGalleryType();
+            if (galleryType && config && config.assets[galleryType]) {
+                const mediaArray = config.assets[galleryType].media;
+
+                if (img && !video && !iframe) {
+                    // Image item
+                    const imgSrc = img.src.split('/').pop(); // Get filename
+                    mediaItem = mediaArray.find(item => item.url.includes(imgSrc) && item.type === 'image');
+                } else if (video) {
+                    // Video item
+                    const videoSrc = video.querySelector('source')?.src || video.src;
+                    const videoFile = videoSrc.split('/').pop(); // Get filename
+                    mediaItem = mediaArray.find(item => item.url.includes(videoFile) && item.type === 'video');
+                } else if (iframe) {
+                    // Embed item
+                    const iframeSrc = iframe.src;
+                    mediaItem = mediaArray.find(item => item.url === iframeSrc);
+                }
+            }
+
+            if (mediaItem) {
+                openModal(mediaItem);
+            }
+        }
+    });
+}
+
+function getCurrentGalleryType() {
+    // Check URL parameters first (for gallery.html)
+    const urlParams = new URLSearchParams(window.location.search);
+    const typeParam = urlParams.get('type');
+    if (typeParam && ['paintings', 'drawings', 'sculptures'].includes(typeParam)) {
+        return typeParam;
+    }
+
+    // Fallback to path-based detection for backward compatibility
+    const path = window.location.pathname;
+    if (path.includes('paintings')) return 'paintings';
+    if (path.includes('drawings')) return 'drawings';
+    if (path.includes('sculptures')) return 'sculptures';
+    return null;
 }
 
 
@@ -657,12 +918,13 @@ document.addEventListener('DOMContentLoaded', async function() {
             }
         } else if (path.includes('bio.html')) {
             populateBio();
-        } else if (path.includes('paintings.html')) {
-            populateGallery('paintings');
-        } else if (path.includes('drawings.html')) {
-            populateGallery('drawings');
-        } else if (path.includes('sculptures.html')) {
-            populateGallery('sculptures');
+        } else if (path.includes('gallery.html') || path.includes('paintings.html') || path.includes('drawings.html') || path.includes('sculptures.html')) {
+            // Handle gallery pages (both new gallery.html and legacy files)
+            const galleryType = getCurrentGalleryType();
+            if (galleryType) {
+                populateGallery(galleryType);
+                initModal();
+            }
         }
     }
 });

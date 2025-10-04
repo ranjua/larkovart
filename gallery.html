@@ -6,12 +6,15 @@
     <title>Larko Art</title>
     <meta name="description" content="Contemporary artist website">
     <link rel="stylesheet" href="css/style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Crimson+Text:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎨</text></svg>">
 </head>
 <body>
     <main>
         <section class="gallery">
-            <h2>Drawings Collection</h2>
+            <h2>Gallery Collection</h2>
 
             <div class="embed-container">
                 <iframe src="" title="" allowfullscreen></iframe>
@@ -22,6 +25,18 @@
             </div>
         </section>
     </main>
+
+    <!-- Modal for full-screen media display -->
+    <div id="media-modal" class="modal">
+        <div class="modal-content">
+            <span class="modal-close">&times;</span>
+            <button class="modal-nav modal-prev">&larr;</button>
+            <button class="modal-nav modal-next">&rarr;</button>
+            <div class="modal-media-container">
+                <!-- Media content will be inserted here -->
+            </div>
+        </div>
+    </div>
 
     <footer>
         <p></p>

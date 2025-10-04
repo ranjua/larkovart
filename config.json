@@ -10,23 +10,28 @@
     "navigation": [
       {
         "label": "Home",
-        "url": "index.html"
+        "url": "index.html",
+        "hidden": false
       },
       {
         "label": "Bio",
-        "url": "bio.html"
+        "url": "bio.html",
+        "hidden": false
       },
       {
         "label": "Paintings",
-        "url": "paintings.html"
+        "url": "gallery.html?type=paintings",
+        "hidden": false
       },
       {
         "label": "Drawings",
-        "url": "drawings.html"
+        "url": "gallery.html?type=drawings",
+        "hidden": false
       },
       {
         "label": "Sculptures",
-        "url": "sculptures.html"
+        "url": "gallery.html?type=sculptures",
+        "hidden": false
       }
     ],
     "footerText": "© 2024 Larkova Art. All rights reserved. | Contact",
@@ -71,10 +76,6 @@
           "content": "With over two decades of experience, Yulia has mastered classical Russian techniques while continuously pushing boundaries in her new Latin-American home. Her studio in Guatemala is a laboratory where traditional Russian methods meet contemporary vision and tropical inspiration, resulting in works that are both timeless and urgently modern."
         },
         {
-          "heading": "Exhibitions and Recognition",
-          "content": "Larkova's work has been featured in galleries across Europe, Russia, and Latin America. Notable exhibitions include the Contemporary Art Biennale in Venice (2022), the Modern Forms Gallery in New York (2023), and emerging shows in Guatemala City. The artist's pieces are part of private collections worldwide, bridging Russian and Latin-American art worlds."
-        },
-        {
           "heading": "Current Work",
           "content": "Currently, Yulia is exploring the intersection of Russian classical techniques with Latin-American themes, creating immersive experiences that blend traditional physical art forms with contemporary cultural narratives. This innovative approach reflects the artist's belief that art should evolve with cultural exchange while maintaining its fundamental human connection."
         }
@@ -100,72 +101,87 @@
   },
   "assets": {
     "paintings": {
-      "video": {
-        "title": "Artist Process Video",
-        "url": "https://www.youtube.com/embed/dQw4w9WgXcQ",
-        "description": "Watch the creative process behind the paintings",
-        "quality": "HD",
-        "duration": "5:30"
-      },
-      "images": [
+      "media": [
         {
-          "title": "Sunset Reverie",
-          "url": "https://picsum.photos/400/300?random=6",
-          "description": "A serene landscape capturing the essence of twilight",
+          "type": "image",
+          "title": "Atitlan",
+          "url": "images/Atitlan.jpg",
+          "description": "Lake Atitlan landscape painting",
           "medium": "Oil on canvas",
-          "dimensions": "48\" x 36\"",
+          "dimensions": "36\" x 48\"",
           "year": "2024",
           "quality": "High resolution"
         },
         {
-          "title": "Inner Light",
-          "url": "https://picsum.photos/400/300?random=7",
-          "description": "Portrait study exploring human emotion",
+          "type": "image",
+          "title": "Gato",
+          "url": "images/Gato.jpg",
+          "description": "Cat portrait study",
           "medium": "Acrylic on canvas",
+          "dimensions": "24\" x 30\"",
+          "year": "2024",
+          "quality": "High resolution"
+        },
+        {
+          "type": "image",
+          "title": "Mar2",
+          "url": "images/Mar2.jpg",
+          "description": "Seascape painting",
+          "medium": "Oil on canvas",
+          "dimensions": "40\" x 30\"",
+          "year": "2023",
+          "quality": "High resolution"
+        },
+        {
+          "type": "image",
+          "title": "Peonea",
+          "url": "images/Peonea.jpg",
+          "description": "Peony flower still life",
+          "medium": "Watercolor and gouache",
+          "dimensions": "24\" x 32\"",
+          "year": "2024",
+          "quality": "High resolution"
+        },
+        {
+          "type": "image",
+          "title": "Quetzal",
+          "url": "images/Quetzal.jpg",
+          "description": "Quetzal bird painting",
+          "medium": "Mixed media on canvas",
           "dimensions": "30\" x 40\"",
           "year": "2024",
           "quality": "High resolution"
         },
         {
-          "title": "Harmony in Chaos",
-          "url": "https://picsum.photos/400/300?random=8",
-          "description": "Abstract composition blending colors and forms",
-          "medium": "Mixed media on canvas",
-          "dimensions": "36\" x 48\"",
-          "year": "2023",
-          "quality": "High resolution"
+          "type": "video",
+          "title": "Peonea Time-lapse",
+          "url": "videos/Peonea.mp4",
+          "description": "Time-lapse of creating the Peonea painting",
+          "quality": "HD",
+          "duration": "3:45"
         },
         {
-          "title": "Ocean Dreams",
-          "url": "https://picsum.photos/400/300?random=9",
-          "description": "Seascape evoking the power of nature",
-          "medium": "Oil on canvas",
-          "dimensions": "40\" x 30\"",
-          "year": "2024",
-          "quality": "High resolution"
-        },
-        {
-          "title": "Ephemeral Beauty",
-          "url": "https://picsum.photos/400/300/300?random=10",
-          "description": "Floral still life celebrating transience",
-          "medium": "Watercolor and gouache",
-          "dimensions": "24\" x 32\"",
-          "year": "2023",
-          "quality": "High resolution"
+          "type": "video",
+          "title": "Tortuga Process",
+          "url": "videos/Tortuga.mp4",
+          "description": "Documentary of the Tortuga painting process",
+          "quality": "HD",
+          "duration": "5:20"
         }
-      ],
-      "render3d": null
+      ]
     },
     "drawings": {
-      "video": {
-        "title": "Drawing Process Time-lapse",
-        "url": "https://www.youtube.com/embed/jNQXAC9IVRw",
-        "description": "Time-lapse of the drawing creation process",
-        "quality": "HD",
-        "duration": "4:15"
-      },
-      "images": [
+      "media": [
         {
+          "type": "video",
+          "title": "Drawing Process Time-lapse",
+          "url": "https://www.youtube.com/embed/jNQXAC9IVRw",
+          "description": "Time-lapse of the drawing creation process",
+          "quality": "HD",
+          "duration": "4:15"
+        },
+        {
+          "type": "image",
           "title": "Reflections",
           "url": "https://picsum.photos/400/300?random=11",
           "description": "Charcoal portrait exploring self-reflection",
@@ -173,56 +189,21 @@
           "dimensions": "24\" x 18\"",
           "year": "2024",
           "quality": "High resolution"
-        },
-        {
-          "title": "Urban Geometry",
-          "url": "https://picsum.photos/400/300?random=12",
-          "description": "Ink study of city architecture",
-          "medium": "Ink and wash",
-          "dimensions": "22\" x 30\"",
-          "year": "2024",
-          "quality": "High resolution"
-        },
-        {
-          "title": "Delicate Balance",
-          "url": "https://picsum.photos/400/300?random=13",
-          "description": "Pencil drawing of natural forms",
-          "medium": "Graphite on paper",
-          "dimensions": "16\" x 20\"",
-          "year": "2023",
-          "quality": "High resolution"
-        },
-        {
-          "title": "Layered Realities",
-          "url": "https://picsum.photos/400/300?random=14",
-          "description": "Mixed media exploration of perception",
-          "medium": "Mixed media on paper",
-          "dimensions": "28\" x 22\"",
-          "year": "2024",
-          "quality": "High resolution"
-        },
-        {
-          "title": "Earth Tones",
-          "url": "https://picsum.photos/400/300?random=15",
-          "description": "Conte study in natural earth pigments",
-          "medium": "Conte crayon",
-          "dimensions": "20\" x 26\"",
-          "year": "2023",
-          "quality": "High resolution"
         }
-      ],
-      "render3d": null
+      ]
     },
     "sculptures": {
-      "video": {
-        "title": "Sculpture Making Process",
-        "url": "https://www.youtube.com/embed/9bZkp7q19f0",
-        "description": "Documentary of the sculpture creation process",
-        "quality": "HD",
-        "duration": "6:45"
-      },
-      "images": [
+      "media": [
         {
+          "type": "video",
+          "title": "Sculpture Making Process",
+          "url": "https://www.youtube.com/embed/9bZkp7q19f0",
+          "description": "Documentary of the sculpture creation process",
+          "quality": "HD",
+          "duration": "6:45"
+        },
+        {
+          "type": "image",
           "title": "Form and Void",
           "url": "https://picsum.photos/400/300?random=16",
           "description": "Bronze sculpture exploring negative space",
@@ -230,34 +211,8 @@
           "dimensions": "36\" x 24\" x 18\"",
           "year": "2023",
           "quality": "High resolution"
-        },
-        {
-          "title": "Intersecting Planes",
-          "url": "https://picsum.photos/400/300?random=17",
-          "description": "Mixed media installation of geometric forms",
-          "medium": "Mixed media",
-          "dimensions": "48\" x 32\" x 28\"",
-          "year": "2024",
-          "quality": "High resolution"
-        },
-        {
-          "title": "Movement in Stillness",
-          "url": "https://picsum.photos/400/300?random=18",
-          "description": "Kinetic sculpture combining steel and bronze",
-          "medium": "Steel and bronze",
-          "dimensions": "42\" x 30\" x 22\"",
-          "year": "2024",
-          "quality": "High resolution"
         }
-      ],
-      "render3d": {
-        "title": "3D Sculpture Model",
-        "url": "https://sketchfab.com/models/placeholder3/embed",
-        "description": "Interactive 3D model for detailed exploration",
-        "format": "Sketchfab embed",
-        "quality": "High detail",
-        "interactive": true
-      }
+      ]
     }
   }
 }
