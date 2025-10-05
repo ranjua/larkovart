@@ -34,7 +34,7 @@
         "hidden": true
       }
     ],
-    "footerText": "© 2025 Larkova Art. All rights reserved.",
+    "footerText": "\u00c2\u00a9 2025 Larkova Art. All rights reserved.",
     "socialMedia": [
       {
         "platform": "Instagram",
@@ -46,7 +46,7 @@
     "heroTitle": "Welcome to Larkova Art",
     "heroSubtitle": "Russian fine-art tradition meets Latin-American environment. Contemporary art that speaks to the soul through paintings, drawings, and sculptures.",
     "ctaText": "Explore My Work",
-    "ctaUrl": "paintings.html",
+    "ctaUrl": "gallery.html?type=paintings",
     "featuredTitle": "Featured Works",
     "bioPreview": {
       "title": "About the Artist",
@@ -123,7 +123,8 @@
           "dimensions": "24\" x 30\"",
           "year": "2024",
           "quality": "High resolution",
-          "sold": true
+          "sold": true,
+          "IsFeatured": true
         },
         {
           "type": "image",
@@ -146,7 +147,8 @@
           "dimensions": "24\" x 32\"",
           "year": "2024",
           "quality": "High resolution",
-          "sold": true
+          "sold": true,
+          "IsFeatured": true
         },
         {
           "type": "image",
@@ -167,7 +169,7 @@
           "description": "Time-lapse of creating the Peonea painting",
           "quality": "HD",
           "duration": "3:45",
-          "IsFeatured": true
+          "IsFeatured": false
         },
         {
           "type": "video",
@@ -175,7 +177,8 @@
           "url": "videos/Tortuga.mp4",
           "description": "Documentary of the Tortuga painting process",
           "quality": "HD",
-          "duration": "5:20"
+          "duration": "5:20",
+          "IsFeatured": false
         }
       ]
     },
@@ -187,7 +190,8 @@
           "url": "https://www.youtube.com/embed/jNQXAC9IVRw",
           "description": "Time-lapse of the drawing creation process",
           "quality": "HD",
-          "duration": "4:15"
+          "duration": "4:15",
+          "IsFeatured": false
         },
         {
           "type": "image",
@@ -211,7 +215,8 @@
           "url": "https://www.youtube.com/embed/9bZkp7q19f0",
           "description": "Documentary of the sculpture creation process",
           "quality": "HD",
-          "duration": "6:45"
+          "duration": "6:45",
+          "IsFeatured": false
         },
         {
           "type": "image",
@@ -223,7 +228,7 @@
           "year": "2023",
           "quality": "High resolution",
           "sold": false,
-          "IsFeatured": true
+          "IsFeatured": false
         }
       ]
     }

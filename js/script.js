@@ -118,6 +118,30 @@ function populateNavigation() {
     }
 }
 
+// Get all featured media from all sections
+function getFeaturedMedia() {
+    if (!config || !config.assets) return [];
+
+    const featuredMedia = [];
+
+    // Iterate through all asset sections (paintings, drawings, sculptures, etc.)
+    Object.keys(config.assets).forEach(sectionKey => {
+        const section = config.assets[sectionKey];
+        if (section.media && Array.isArray(section.media)) {
+            section.media.forEach(media => {
+                if (media.IsFeatured === true) {
+                    featuredMedia.push({
+                        ...media,
+                        section: sectionKey
+                    });
+                }
+            });
+        }
+    });
+
+    return featuredMedia;
+}
+
 // Populate hero section
 function populateHero() {
     console.log('populateHero called, config:', !!config);
@@ -144,6 +168,22 @@ function populateHero() {
 }
 
 // Populate featured works carousel
+// Helper function to get items per group based on viewport
+function getItemsPerGroup() {
+    const width = window.innerWidth;
+    if (width <= 480) return 1;
+    if (width <= 768) return 2;
+    return 4;
+}
+
+// Helper function to get current breakpoint
+function getCurrentBreakpoint() {
+    const width = window.innerWidth;
+    if (width <= 480) return 'mobile';
+    if (width <= 768) return 'tablet';
+    return 'desktop';
+}
+
 function populateFeaturedWorks() {
     const featuredGrid = document.querySelector('.gallery-grid');
     if (!featuredGrid) return;
@@ -163,56 +203,76 @@ function populateFeaturedWorks() {
     const carouselTrack = document.createElement('div');
     carouselTrack.className = 'carousel-track';
 
-    // Add featured media items
-    featuredMedia.forEach((media, index) => {
-        const item = document.createElement('div');
-        item.className = 'carousel-item';
+    // Group media based on current viewport size
+    const itemsPerGroup = getItemsPerGroup();
+    const totalGroups = Math.ceil(featuredMedia.length / itemsPerGroup);
 
-        if (media.type === 'image') {
-            const img = document.createElement('img');
-            img.src = media.url;
-            img.alt = media.title;
-            img.loading = 'lazy';
-            item.appendChild(img);
-        } else if (media.type === 'video') {
-            // Handle video items
-            if (media.url.includes('youtube.com') || media.url.includes('youtu.be')) {
-                const iframe = document.createElement('iframe');
-                iframe.src = media.url;
-                iframe.frameBorder = '0';
-                iframe.allow = 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture';
-                iframe.allowFullscreen = true;
-                iframe.loading = 'lazy';
-                item.appendChild(iframe);
-            } else {
-                const video = document.createElement('video');
-                video.src = media.url;
-                video.controls = true;
-                video.preload = 'metadata';
-                item.appendChild(video);
+    // Use original media without duplication for finite carousel
+    const displayMedia = [...featuredMedia];
+
+    // Create carousel groups
+    for (let groupIndex = 0; groupIndex < displayMedia.length; groupIndex += itemsPerGroup) {
+        const groupMedia = displayMedia.slice(groupIndex, groupIndex + itemsPerGroup);
+        const groupElement = document.createElement('div');
+        groupElement.className = 'carousel-group';
+
+        groupMedia.forEach((media, mediaIndex) => {
+            const item = document.createElement('div');
+            item.className = 'carousel-item';
+
+            // Add shadow effect to last visible item in each group
+            if (mediaIndex === itemsPerGroup - 1) {
+                item.classList.add('last-visible');
             }
-        }
 
-        // Add overlay with info
-        const overlay = document.createElement('div');
-        overlay.className = 'carousel-overlay';
+            if (media.type === 'image') {
+                const img = document.createElement('img');
+                img.src = media.url;
+                img.alt = media.title;
+                img.loading = 'lazy';
+                item.appendChild(img);
+            } else if (media.type === 'video') {
+                // Handle video items
+                if (media.url.includes('youtube.com') || media.url.includes('youtu.be')) {
+                    const iframe = document.createElement('iframe');
+                    iframe.src = media.url;
+                    iframe.frameBorder = '0';
+                    iframe.allow = 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture';
+                    iframe.allowFullscreen = true;
+                    iframe.loading = 'lazy';
+                    item.appendChild(iframe);
+                } else {
+                    const video = document.createElement('video');
+                    video.src = media.url;
+                    video.controls = true;
+                    video.preload = 'metadata';
+                    item.appendChild(video);
+                }
+            }
 
-        const h3 = document.createElement('h3');
-        h3.textContent = media.title;
+            // Add overlay with info
+            const overlay = document.createElement('div');
+            overlay.className = 'carousel-overlay';
 
-        const p = document.createElement('p');
-        if (media.medium && media.year) {
-            p.textContent = `${media.medium}, ${media.year}`;
-        } else if (media.description) {
-            p.textContent = media.description;
-        }
+            const h3 = document.createElement('h3');
+            h3.textContent = media.title;
 
-        overlay.appendChild(h3);
-        overlay.appendChild(p);
-        item.appendChild(overlay);
+            const p = document.createElement('p');
+            if (media.medium && media.year) {
+                p.textContent = `${media.medium}, ${media.year}`;
+            } else if (media.description) {
+                p.textContent = media.description;
+            }
 
-        carouselTrack.appendChild(item);
-    });
+            overlay.appendChild(h3);
+            overlay.appendChild(p);
+            item.appendChild(overlay);
+
+            groupElement.appendChild(item);
+        });
+
+        carouselTrack.appendChild(groupElement);
+    }
 
     carouselContainer.appendChild(carouselTrack);
 
@@ -234,13 +294,14 @@ function populateFeaturedWorks() {
     const indicators = document.createElement('div');
     indicators.className = 'carousel-indicators';
 
-    featuredMedia.forEach((_, index) => {
+    // Show indicators for actual groups (not including the duplicated one)
+    for (let i = 0; i < totalGroups; i++) {
         const indicator = document.createElement('button');
         indicator.className = 'carousel-indicator';
-        if (index === 0) indicator.classList.add('active');
-        indicator.setAttribute('data-slide', index);
+        if (i === 0) indicator.classList.add('active');
+        indicator.setAttribute('data-slide', i);
         indicators.appendChild(indicator);
-    });
+    }
 
     carouselContainer.appendChild(indicators);
 
@@ -253,34 +314,69 @@ function populateFeaturedWorks() {
 // Initialize carousel functionality
 function initializeCarousel(carouselElement) {
     const track = carouselElement.querySelector('.carousel-track');
-    const items = carouselElement.querySelectorAll('.carousel-item');
+    const groups = carouselElement.querySelectorAll('.carousel-group');
     const prevBtn = carouselElement.querySelector('.carousel-prev');
     const nextBtn = carouselElement.querySelector('.carousel-next');
     const indicators = carouselElement.querySelectorAll('.carousel-indicator');
 
-    if (!track || items.length === 0) return;
+    if (!track || groups.length === 0) return;
+
+    // Set track width to accommodate all groups
+    track.style.width = `${groups.length * 100}%`;
+    groups.forEach(group => {
+        group.style.width = `${100 / groups.length}%`;
+    });
 
     let currentIndex = 0;
+    const totalGroups = groups.length;
 
     function updateCarousel() {
-        // Update track position
-        const itemWidth = items[0].offsetWidth;
-        track.style.transform = `translateX(-${currentIndex * itemWidth}px)`;
+        // Update track position - translate by percentage
+        const translatePercent = -(currentIndex * (100 / totalGroups));
+        track.style.transform = `translateX(${translatePercent}%)`;
 
         // Update indicators
         indicators.forEach((indicator, index) => {
             indicator.classList.toggle('active', index === currentIndex);
         });
+
+        // Update shadow effect for last visible items
+        groups.forEach((group, groupIndex) => {
+            const items = group.querySelectorAll('.carousel-item');
+            const itemsPerGroup = getItemsPerGroup();
+
+            items.forEach((item, itemIndex) => {
+                if (itemIndex === Math.min(itemsPerGroup - 1, items.length - 1) && groupIndex === currentIndex) {
+                    item.classList.add('last-visible');
+                } else {
+                    item.classList.remove('last-visible');
+                }
+            });
+        });
+
+        // Update navigation button states
+        if (prevBtn) {
+            prevBtn.disabled = currentIndex === 0;
+            prevBtn.style.opacity = currentIndex === 0 ? '0.5' : '1';
+        }
+        if (nextBtn) {
+            nextBtn.disabled = currentIndex === totalGroups - 1;
+            nextBtn.style.opacity = currentIndex === totalGroups - 1 ? '0.5' : '1';
+        }
     }
 
     function nextSlide() {
-        currentIndex = (currentIndex + 1) % items.length;
-        updateCarousel();
+        if (currentIndex < totalGroups - 1) {
+            currentIndex++;
+            updateCarousel();
+        }
     }
 
     function prevSlide() {
-        currentIndex = (currentIndex - 1 + items.length) % items.length;
-        updateCarousel();
+        if (currentIndex > 0) {
+            currentIndex--;
+            updateCarousel();
+        }
     }
 
     function goToSlide(index) {
@@ -296,23 +392,54 @@ function initializeCarousel(carouselElement) {
         indicator.addEventListener('click', () => goToSlide(index));
     });
 
-    // Auto-play (optional)
-    let autoplayInterval = setInterval(nextSlide, 5000);
+    // Auto-play (optional) - disabled for finite carousel
+    // let autoplayInterval = setInterval(nextSlide, 5000);
 
     // Pause on hover
     carouselElement.addEventListener('mouseenter', () => {
-        clearInterval(autoplayInterval);
+        // clearInterval(autoplayInterval);
     });
 
     carouselElement.addEventListener('mouseleave', () => {
-        autoplayInterval = setInterval(nextSlide, 5000);
+        // autoplayInterval = setInterval(nextSlide, 5000);
     });
 
     // Handle window resize
-    window.addEventListener('resize', updateCarousel);
+    window.addEventListener('resize', () => {
+        updateCarousel();
+    });
 
-    // Initial update
-    updateCarousel();
+    // Wait for images to load before initializing
+    const images = carouselElement.querySelectorAll('img');
+    let loadedImages = 0;
+    const totalImages = images.length;
+
+    if (totalImages > 0) {
+        images.forEach(img => {
+            if (img.complete) {
+                loadedImages++;
+                if (loadedImages === totalImages) {
+                    updateCarousel();
+                }
+            } else {
+                img.addEventListener('load', () => {
+                    loadedImages++;
+                    if (loadedImages === totalImages) {
+                        updateCarousel();
+                    }
+                });
+                img.addEventListener('error', () => {
+                    loadedImages++;
+                    if (loadedImages === totalImages) {
+                        updateCarousel();
+                    }
+                });
+            }
+        });
+    } else {
+        // No images, initialize immediately
+        updateCarousel();
+    }
 }
 
 // Populate bio preview section (for homepage)
@@ -800,6 +927,16 @@ document.addEventListener('DOMContentLoaded', async function() {
             if (featuredTitle) featuredTitle.textContent = config.general.featuredTitle;
             // Populate featured works carousel
             populateFeaturedWorks();
+
+            // Handle responsive carousel re-grouping on window resize
+            let lastBreakpoint = getCurrentBreakpoint();
+            window.addEventListener('resize', () => {
+                const currentBreakpoint = getCurrentBreakpoint();
+                if (currentBreakpoint !== lastBreakpoint) {
+                    lastBreakpoint = currentBreakpoint;
+                    populateFeaturedWorks();
+                }
+            });
         } else if (path.includes('bio.html')) {
             populateBio();
         } else if (path.includes('paintings.html')) {
@@ -1026,6 +1163,16 @@ document.addEventListener('DOMContentLoaded', async function() {
             if (featuredTitle) featuredTitle.textContent = config.general.featuredTitle;
             // Populate featured works carousel
             populateFeaturedWorks();
+
+            // Handle responsive carousel re-grouping on window resize
+            let lastBreakpoint = getCurrentBreakpoint();
+            window.addEventListener('resize', () => {
+                const currentBreakpoint = getCurrentBreakpoint();
+                if (currentBreakpoint !== lastBreakpoint) {
+                    lastBreakpoint = currentBreakpoint;
+                    populateFeaturedWorks();
+                }
+            });
         } else if (path.includes('bio')) {
             populateBio();
         } else if (path.includes('gallery')) {
