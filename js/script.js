@@ -884,9 +884,9 @@ document.addEventListener('DOMContentLoaded', async function() {
                     featuredGrid.appendChild(item);
                 });
             }
-        } else if (path.includes('bio.html')) {
+        } else if (path.includes('bio')) {
             populateBio();
-        } else if (path.includes('gallery.html') || path.includes('paintings.html') || path.includes('drawings.html') || path.includes('sculptures.html')) {
+        } else if (path.includes('gallery')) {
             // Handle gallery pages (both new gallery.html and legacy files)
             const galleryType = getCurrentGalleryType();
             if (galleryType) {
