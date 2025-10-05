@@ -68,10 +68,6 @@ a {
   transition: color var(--transition-speed);
 }
 
-a:hover {
-  color: var(--primary-dark);
-}
-
 /* Layout */
 main {
   min-height: 100vh;
@@ -115,6 +111,7 @@ section {
   font-weight: 600;
   color: #FFFFFF; /* White text */
   letter-spacing: -0.01em;
+  position: relative;
 }
 
 .nav-menu {
@@ -163,9 +160,6 @@ section {
 }
 
 /* Logo underline effect */
-.logo {
-  position: relative;
-}
 
 .logo::after {
   content: '';
@@ -433,12 +427,6 @@ section {
   margin-bottom: var(--spacing-lg);
 }
 
-.bio-image img {
-  width: 100%;
-  border-radius: var(--border-radius-large);
-  box-shadow: var(--shadow-medium);
-}
-
 /* Footer */
 footer {
   background-color: var(--text-color);
@@ -494,38 +482,6 @@ footer p {
 
 .modal-close:hover {
   color: var(--primary-color);
-}
-
-.modal-nav {
-  position: absolute;
-  top: 50%;
-  transform: translateY(-50%);
-  background: rgba(255, 255, 255, 0.1);
-  color: white;
-  border: none;
-  font-size: 30px;
-  width: 60px;
-  height: 60px;
-  cursor: pointer;
-  z-index: 2001;
-  transition: background-color var(--transition-speed);
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  backdrop-filter: blur(10px);
-}
-
-.modal-nav:hover {
-  background: rgba(255, 255, 255, 0.2);
-}
-
-.modal-prev {
-  left: 30px;
-}
-
-.modal-next {
-  right: 30px;
 }
 
 .modal-media-container {
@@ -702,22 +658,33 @@ footer p {
   max-width: 1200px;
   margin: 0 auto;
   display: flex;
-  justify-content: space-between;
   align-items: center;
   padding: 0 20px;
 }
 
 .logo {
+  flex: 1;
   font-size: 1.8rem;
   font-weight: bold;
   color: white;
   text-decoration: none;
+  text-align: left;
+}
+
+.nav-menu {
+  flex: 2;
+  display: flex;
+  justify-content: center;
+  list-style: none;
+  margin: 0;
+  padding: 0;
 }
 
 .nav-social {
+  flex: 1;
   display: flex;
+  justify-content: flex-end;
   gap: 0.5rem;
-  margin-left: 1rem;
 }
 
 .nav-social-link {
@@ -748,9 +715,13 @@ footer p {
 }
 
 .nav-menu {
+  flex: 2;
   display: flex;
+  justify-content: center;
   list-style: none;
   gap: 2rem;
+  margin: 0;
+  padding: 0;
 }
 
 .nav-menu a {
@@ -768,6 +739,7 @@ footer p {
   display: none;
   flex-direction: column;
   cursor: pointer;
+  margin-left: auto;
 }
 
 .hamburger span {
@@ -1015,9 +987,65 @@ main {
 }
 
 .bio-image {
-  border-radius: var(--border-radius);
-  box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+  position: relative;
+  border-radius: var(--border-radius-large);
+  overflow: hidden;
+  box-shadow:
+    0 8px 32px rgba(0, 0, 0, 0.15),
+    0 0 0 1px rgba(255, 255, 255, 0.1) inset;
   max-width: 100%;
+  transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+  filter:
+    sepia(0.1)
+    contrast(1.05)
+    brightness(1.02)
+    saturate(1.1);
+}
+
+.bio-image::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background:
+    radial-gradient(circle at center, transparent 40%, rgba(0, 0, 0, 0.1) 100%),
+    linear-gradient(45deg, rgba(218, 165, 32, 0.05) 0%, transparent 50%, rgba(107, 142, 35, 0.05) 100%);
+  pointer-events: none;
+  z-index: 1;
+}
+
+.bio-image img {
+  display: block;
+  width: 100%;
+  height: auto;
+  transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  z-index: 0;
+}
+
+.bio-image:hover {
+  box-shadow:
+    0 12px 40px rgba(0, 0, 0, 0.2),
+    0 0 20px rgba(218, 165, 32, 0.1),
+    0 0 0 1px rgba(255, 255, 255, 0.15) inset;
+  filter:
+    sepia(0.05)
+    contrast(1.08)
+    brightness(1.05)
+    saturate(1.15);
+  transform: scale(1.02);
+}
+
+.bio-image:hover img {
+  transform: scale(1.05);
+}
+
+.bio-image:hover::before {
+  background:
+    radial-gradient(circle at center, transparent 35%, rgba(0, 0, 0, 0.15) 100%),
+    linear-gradient(45deg, rgba(218, 165, 32, 0.08) 0%, transparent 50%, rgba(107, 142, 35, 0.08) 100%);
 }
 
 /* Footer */
@@ -1216,23 +1244,70 @@ footer p {
   position: absolute;
   top: 50%;
   transform: translateY(-50%);
-  background: rgba(0, 0, 0, 0.5);
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.05));
   color: white;
-  border: none;
-  font-size: 30px;
-  width: 60px;
-  height: 60px;
+  border: 2px solid rgba(255, 255, 255, 0.2);
+  font-size: 24px;
+  width: 70px;
+  height: 70px;
   cursor: pointer;
   z-index: 1001;
-  transition: background-color var(--transition-speed);
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
+  backdrop-filter: blur(20px);
+  box-shadow:
+    0 8px 32px rgba(0, 0, 0, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  overflow: hidden;
+  animation: modal-nav-pulse 3s ease-in-out infinite;
+}
+
+.modal-nav::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 0;
+  height: 0;
+  background: radial-gradient(circle, rgba(255, 255, 255, 0.3) 0%, transparent 70%);
+  transform: translate(-50%, -50%);
+  border-radius: 50%;
+  transition: width 0.6s ease, height 0.6s ease;
+  pointer-events: none;
 }
 
 .modal-nav:hover {
-  background: rgba(0, 0, 0, 0.8);
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.2), rgba(255, 255, 255, 0.1));
+  border-color: rgba(255, 255, 255, 0.5);
+  transform: translateY(-50%) scale(1.1);
+  box-shadow:
+    0 12px 40px rgba(0, 0, 0, 0.4),
+    0 0 20px rgba(255, 255, 255, 0.1),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2);
+  animation: none;
+}
+
+.modal-nav:hover::before {
+  width: 140px;
+  height: 140px;
+}
+
+.modal-nav:active {
+  transform: translateY(-50%) scale(0.95);
+  transition: transform 0.1s ease;
+}
+
+.modal-nav span {
+  position: relative;
+  z-index: 1;
+  transition: transform 0.3s ease;
+}
+
+.modal-nav:hover span {
+  transform: scale(1.1);
 }
 
 .modal-prev {
@@ -1285,9 +1360,9 @@ footer p {
   }
 
   .modal-nav {
-    width: 50px;
-    height: 50px;
-    font-size: 24px;
+    width: 60px;
+    height: 60px;
+    font-size: 20px;
   }
 
   .modal-prev {
@@ -1296,6 +1371,23 @@ footer p {
 
   .modal-next {
     right: 10px;
+  }
+}
+
+/* Mobile modal styles */
+@media (max-width: 480px) {
+  .modal-nav {
+    width: 55px;
+    height: 55px;
+    font-size: 18px;
+  }
+
+  .modal-prev {
+    left: 5px;
+  }
+
+  .modal-next {
+    right: 5px;
   }
 }
 

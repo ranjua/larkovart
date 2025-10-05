@@ -34,7 +34,7 @@
         "hidden": true
       }
     ],
-    "footerText": "\u00c2\u00a9 2025 Larkova Art. All rights reserved.",
+    "footerText": "© 2025 Larkova Art. All rights reserved.",
     "socialMedia": [
       {
         "platform": "Instagram",
@@ -54,7 +54,7 @@
       "description2": "Each piece is a journey of cultural fusion, inviting viewers to explore the intersection of Russian heritage and Latin-American inspiration. From the sweeping strokes of oil paintings to the intricate details of bronze sculptures, Larkova's art speaks a universal language of tradition and innovation.",
       "ctaText": "Learn More",
       "ctaUrl": "bio.html",
-      "imageUrl": "https://picsum.photos/400/400?random=4",
+      "imageUrl": "photos/1.jpg",
       "imageAlt": "Artist Yulia Larkova at work"
     }
   },
