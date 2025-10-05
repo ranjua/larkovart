@@ -33,13 +33,36 @@ async function loadFooter() {
 // Load configuration
 async function loadConfig() {
     try {
+        // Try fetch first (works in modern browsers with server)
         const response = await fetch('config.json');
         config = await response.json();
         console.log('Config loaded:', config);
         return config;
     } catch (error) {
-        console.error('Error loading config:', error);
-        return null;
+        console.warn('Fetch failed, trying XMLHttpRequest for local files:', error);
+        // Fallback for local files
+        return new Promise((resolve, reject) => {
+            const xhr = new XMLHttpRequest();
+            xhr.open('GET', 'config.json', true);
+            xhr.onreadystatechange = function() {
+                if (xhr.readyState === 4) {
+                    if (xhr.status === 200) {
+                        try {
+                            config = JSON.parse(xhr.responseText);
+                            console.log('Config loaded via XMLHttpRequest:', config);
+                            resolve(config);
+                        } catch (parseError) {
+                            console.error('Error parsing config JSON:', parseError);
+                            reject(parseError);
+                        }
+                    } else {
+                        console.error('Error loading config via XMLHttpRequest:', xhr.status);
+                        reject(new Error('HTTP ' + xhr.status));
+                    }
+                }
+            };
+            xhr.send();
+        });
     }
 }
 
@@ -97,14 +120,18 @@ function populateNavigation() {
 
 // Populate hero section
 function populateHero() {
+    console.log('populateHero called, config:', !!config);
     if (!config) return;
 
     const heroContent = document.querySelector('.hero-content');
+    console.log('heroContent found:', !!heroContent);
     if (!heroContent) return;
 
     const h1 = heroContent.querySelector('h1');
     const p = heroContent.querySelector('p');
     const cta = heroContent.querySelector('.cta-button');
+
+    console.log('Elements found - h1:', !!h1, 'p:', !!p, 'cta:', !!cta);
 
     if (h1) h1.textContent = config.general.heroTitle;
     if (p) p.textContent = config.general.heroSubtitle;
@@ -112,6 +139,180 @@ function populateHero() {
         cta.textContent = config.general.ctaText;
         cta.href = config.general.ctaUrl;
     }
+    
+    console.log('Hero populated successfully');
+}
+
+// Populate featured works carousel
+function populateFeaturedWorks() {
+    const featuredGrid = document.querySelector('.gallery-grid');
+    if (!featuredGrid) return;
+
+    const featuredMedia = getFeaturedMedia();
+    if (featuredMedia.length === 0) return;
+
+    // Change grid to carousel container
+    featuredGrid.className = 'featured-carousel';
+    featuredGrid.innerHTML = '';
+
+    // Create carousel container
+    const carouselContainer = document.createElement('div');
+    carouselContainer.className = 'carousel-container';
+
+    // Create carousel track
+    const carouselTrack = document.createElement('div');
+    carouselTrack.className = 'carousel-track';
+
+    // Add featured media items
+    featuredMedia.forEach((media, index) => {
+        const item = document.createElement('div');
+        item.className = 'carousel-item';
+
+        if (media.type === 'image') {
+            const img = document.createElement('img');
+            img.src = media.url;
+            img.alt = media.title;
+            img.loading = 'lazy';
+            item.appendChild(img);
+        } else if (media.type === 'video') {
+            // Handle video items
+            if (media.url.includes('youtube.com') || media.url.includes('youtu.be')) {
+                const iframe = document.createElement('iframe');
+                iframe.src = media.url;
+                iframe.frameBorder = '0';
+                iframe.allow = 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture';
+                iframe.allowFullscreen = true;
+                iframe.loading = 'lazy';
+                item.appendChild(iframe);
+            } else {
+                const video = document.createElement('video');
+                video.src = media.url;
+                video.controls = true;
+                video.preload = 'metadata';
+                item.appendChild(video);
+            }
+        }
+
+        // Add overlay with info
+        const overlay = document.createElement('div');
+        overlay.className = 'carousel-overlay';
+
+        const h3 = document.createElement('h3');
+        h3.textContent = media.title;
+
+        const p = document.createElement('p');
+        if (media.medium && media.year) {
+            p.textContent = `${media.medium}, ${media.year}`;
+        } else if (media.description) {
+            p.textContent = media.description;
+        }
+
+        overlay.appendChild(h3);
+        overlay.appendChild(p);
+        item.appendChild(overlay);
+
+        carouselTrack.appendChild(item);
+    });
+
+    carouselContainer.appendChild(carouselTrack);
+
+    // Add navigation buttons
+    const prevButton = document.createElement('button');
+    prevButton.className = 'carousel-nav carousel-prev';
+    prevButton.innerHTML = '&#10094;';
+    prevButton.setAttribute('aria-label', 'Previous');
+
+    const nextButton = document.createElement('button');
+    nextButton.className = 'carousel-nav carousel-next';
+    nextButton.innerHTML = '&#10095;';
+    nextButton.setAttribute('aria-label', 'Next');
+
+    carouselContainer.appendChild(prevButton);
+    carouselContainer.appendChild(nextButton);
+
+    // Add indicators
+    const indicators = document.createElement('div');
+    indicators.className = 'carousel-indicators';
+
+    featuredMedia.forEach((_, index) => {
+        const indicator = document.createElement('button');
+        indicator.className = 'carousel-indicator';
+        if (index === 0) indicator.classList.add('active');
+        indicator.setAttribute('data-slide', index);
+        indicators.appendChild(indicator);
+    });
+
+    carouselContainer.appendChild(indicators);
+
+    featuredGrid.appendChild(carouselContainer);
+
+    // Initialize carousel functionality
+    initializeCarousel(featuredGrid);
+}
+
+// Initialize carousel functionality
+function initializeCarousel(carouselElement) {
+    const track = carouselElement.querySelector('.carousel-track');
+    const items = carouselElement.querySelectorAll('.carousel-item');
+    const prevBtn = carouselElement.querySelector('.carousel-prev');
+    const nextBtn = carouselElement.querySelector('.carousel-next');
+    const indicators = carouselElement.querySelectorAll('.carousel-indicator');
+
+    if (!track || items.length === 0) return;
+
+    let currentIndex = 0;
+
+    function updateCarousel() {
+        // Update track position
+        const itemWidth = items[0].offsetWidth;
+        track.style.transform = `translateX(-${currentIndex * itemWidth}px)`;
+
+        // Update indicators
+        indicators.forEach((indicator, index) => {
+            indicator.classList.toggle('active', index === currentIndex);
+        });
+    }
+
+    function nextSlide() {
+        currentIndex = (currentIndex + 1) % items.length;
+        updateCarousel();
+    }
+
+    function prevSlide() {
+        currentIndex = (currentIndex - 1 + items.length) % items.length;
+        updateCarousel();
+    }
+
+    function goToSlide(index) {
+        currentIndex = index;
+        updateCarousel();
+    }
+
+    // Event listeners
+    if (nextBtn) nextBtn.addEventListener('click', nextSlide);
+    if (prevBtn) prevBtn.addEventListener('click', prevSlide);
+
+    indicators.forEach((indicator, index) => {
+        indicator.addEventListener('click', () => goToSlide(index));
+    });
+
+    // Auto-play (optional)
+    let autoplayInterval = setInterval(nextSlide, 5000);
+
+    // Pause on hover
+    carouselElement.addEventListener('mouseenter', () => {
+        clearInterval(autoplayInterval);
+    });
+
+    carouselElement.addEventListener('mouseleave', () => {
+        autoplayInterval = setInterval(nextSlide, 5000);
+    });
+
+    // Handle window resize
+    window.addEventListener('resize', updateCarousel);
+
+    // Initial update
+    updateCarousel();
 }
 
 // Populate bio preview section (for homepage)
@@ -597,37 +798,8 @@ document.addEventListener('DOMContentLoaded', async function() {
             // Populate featured works title
             const featuredTitle = document.querySelector('.gallery h2');
             if (featuredTitle) featuredTitle.textContent = config.general.featuredTitle;
-            // Populate featured works (could be first few from paintings)
-            const featuredGrid = document.querySelector('.gallery-grid');
-            if (featuredGrid && config.assets.paintings && config.assets.paintings.images) {
-                featuredGrid.innerHTML = '';
-                config.assets.paintings.images.slice(0, 3).forEach(image => {
-                    const item = document.createElement('div');
-                    item.className = 'gallery-item';
-
-                    const img = document.createElement('img');
-                    img.src = image.url;
-                    img.alt = image.title;
-                    img.loading = 'lazy';
-
-                    const overlay = document.createElement('div');
-                    overlay.className = 'overlay';
-
-                    const h3 = document.createElement('h3');
-                    h3.textContent = image.title;
-
-                    const p = document.createElement('p');
-                    p.textContent = `${image.medium}, ${image.year}`;
-
-                    overlay.appendChild(h3);
-                    overlay.appendChild(p);
-
-                    item.appendChild(img);
-                    item.appendChild(overlay);
-
-                    featuredGrid.appendChild(item);
-                });
-            }
+            // Populate featured works carousel
+            populateFeaturedWorks();
         } else if (path.includes('bio.html')) {
             populateBio();
         } else if (path.includes('paintings.html')) {
@@ -639,16 +811,9 @@ document.addEventListener('DOMContentLoaded', async function() {
         }
     }
 
-    // Mobile Navigation Toggle
+    // Define navigation elements for smooth scrolling
     const hamburger = document.querySelector('.hamburger');
     const navMenu = document.querySelector('.nav-menu');
-
-    if (hamburger && navMenu) {
-        hamburger.addEventListener('click', function() {
-            navMenu.classList.toggle('active');
-            hamburger.classList.toggle('active');
-        });
-    }
 
     // Smooth Scrolling for Navigation Links
     document.addEventListener('click', function(e) {
@@ -830,11 +995,7 @@ window.addEventListener('scroll', function() {
 
 // Initialize the page when DOM is loaded
 document.addEventListener('DOMContentLoaded', async function() {
-    // Load header and footer
-    await loadHeader();
-    await loadFooter();
-
-    // Then load config and initialize page
+    // Load config and initialize page
     await loadConfig();
     if (config) {
         // Set default page title and meta
@@ -845,45 +1006,26 @@ document.addEventListener('DOMContentLoaded', async function() {
         populateNavigation();
         populateFooter();
 
+        // Setup mobile navigation after navigation is populated
+        setupHamburgerToggle();
+
         // Page-specific initialization
         const path = window.location.pathname;
-        if (path.includes('index.html') || path === '/' || path.endsWith('larkovart/')) {
+        const isIndexPage = path.includes('index') || path === '/' || path.endsWith('larkovart/') || 
+                           (!path.includes('gallery') && !path.includes('bio') && !path.includes('.html'));
+        
+        console.log('Current path:', path);
+        console.log('Is index page:', isIndexPage);
+        
+        if (isIndexPage) {
+            console.log('Populating hero...');
             populateHero();
             populateBioPreview();
             // Populate featured works title
             const featuredTitle = document.querySelector('.gallery h2');
             if (featuredTitle) featuredTitle.textContent = config.general.featuredTitle;
-            // Populate featured works (could be first few from paintings)
-            const featuredGrid = document.querySelector('.gallery-grid');
-            if (featuredGrid && config.assets.paintings && config.assets.paintings.images) {
-                featuredGrid.innerHTML = '';
-                config.assets.paintings.images.slice(0, 3).forEach(image => {
-                    const item = document.createElement('div');
-                    item.className = 'gallery-item';
-
-                    const img = document.createElement('img');
-                    img.src = image.url;
-                    img.alt = image.title;
-                    img.loading = 'lazy';
-
-                    const overlay = document.createElement('div');
-                    overlay.className = 'overlay';
-
-                    const h3 = document.createElement('h3');
-                    h3.textContent = image.title;
-
-                    const p = document.createElement('p');
-                    p.textContent = `${image.medium}, ${image.year}`;
-
-                    overlay.appendChild(h3);
-                    overlay.appendChild(p);
-
-                    item.appendChild(img);
-                    item.appendChild(overlay);
-
-                    featuredGrid.appendChild(item);
-                });
-            }
+            // Populate featured works carousel
+            populateFeaturedWorks();
         } else if (path.includes('bio')) {
             populateBio();
         } else if (path.includes('gallery')) {
@@ -896,3 +1038,16 @@ document.addEventListener('DOMContentLoaded', async function() {
         }
     }
 });
+
+// Setup mobile navigation toggle
+function setupHamburgerToggle() {
+    const hamburger = document.querySelector('.hamburger');
+    const navMenu = document.querySelector('.nav-menu');
+
+    if (hamburger && navMenu) {
+        hamburger.addEventListener('click', function() {
+            navMenu.classList.toggle('active');
+            hamburger.classList.toggle('active');
+        });
+    }
+}

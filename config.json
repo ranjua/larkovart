@@ -26,12 +26,12 @@
       {
         "label": "Drawings",
         "url": "gallery.html?type=drawings",
-        "hidden": false
+        "hidden": true
       },
       {
         "label": "Sculptures",
         "url": "gallery.html?type=sculptures",
-        "hidden": false
+        "hidden": true
       }
     ],
     "footerText": "© 2025 Larkova Art. All rights reserved.",
@@ -111,7 +111,8 @@
           "dimensions": "36\" x 48\"",
           "year": "2024",
           "quality": "High resolution",
-          "sold": false
+          "sold": false,
+          "IsFeatured": true
         },
         {
           "type": "image",
@@ -133,7 +134,8 @@
           "dimensions": "40\" x 30\"",
           "year": "2023",
           "quality": "High resolution",
-          "sold": false
+          "sold": false,
+          "IsFeatured": true
         },
         {
           "type": "image",
@@ -155,7 +157,8 @@
           "dimensions": "30\" x 40\"",
           "year": "2024",
           "quality": "High resolution",
-          "sold": false
+          "sold": false,
+          "IsFeatured": true
         },
         {
           "type": "video",
@@ -163,7 +166,8 @@
           "url": "videos/Peonea.mp4",
           "description": "Time-lapse of creating the Peonea painting",
           "quality": "HD",
-          "duration": "3:45"
+          "duration": "3:45",
+          "IsFeatured": true
         },
         {
           "type": "video",
@@ -194,7 +198,8 @@
           "dimensions": "24\" x 18\"",
           "year": "2024",
           "quality": "High resolution",
-          "sold": true
+          "sold": true,
+          "IsFeatured": true
         }
       ]
     },
@@ -217,7 +222,8 @@
           "dimensions": "36\" x 24\" x 18\"",
           "year": "2023",
           "quality": "High resolution",
-          "sold": false
+          "sold": false,
+          "IsFeatured": true
         }
       ]
     }
