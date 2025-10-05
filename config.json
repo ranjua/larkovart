@@ -84,7 +84,9 @@
         "title": "Artist Statement",
         "quote": "\"In a world that demands clarity, I choose to embrace complexity. My art is a bridge between Russian fine-art tradition and Latin-American environment, inviting viewers to find their own meaning within the forms and colors that dance across canvas, paper, and bronze - a cultural fusion that speaks to the soul.\"",
         "attribution": "- Yulia Larkova, 2024"
-      }
+      },
+      "ctaText": "Explore My Work",
+      "ctaUrl": "gallery.html?type=paintings"
     },
     "paintings": {
       "title": "Paintings Collection",

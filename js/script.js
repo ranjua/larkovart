@@ -2,34 +2,6 @@
 
 let config = null;
 
-// Load header HTML
-async function loadHeader() {
-    try {
-        const response = await fetch('header.html');
-        const headerHTML = await response.text();
-        const body = document.body;
-        body.insertAdjacentHTML('afterbegin', headerHTML);
-        return true;
-    } catch (error) {
-        console.error('Error loading header:', error);
-        return false;
-    }
-}
-
-// Load footer HTML
-async function loadFooter() {
-    try {
-        const response = await fetch('footer.html');
-        const footerHTML = await response.text();
-        const body = document.body;
-        body.insertAdjacentHTML('beforeend', footerHTML);
-        return true;
-    } catch (error) {
-        console.error('Error loading footer:', error);
-        return false;
-    }
-}
-
 // Load configuration
 async function loadConfig() {
     try {
@@ -144,18 +116,14 @@ function getFeaturedMedia() {
 
 // Populate hero section
 function populateHero() {
-    console.log('populateHero called, config:', !!config);
     if (!config) return;
 
     const heroContent = document.querySelector('.hero-content');
-    console.log('heroContent found:', !!heroContent);
     if (!heroContent) return;
 
     const h1 = heroContent.querySelector('h1');
     const p = heroContent.querySelector('p');
     const cta = heroContent.querySelector('.cta-button');
-
-    console.log('Elements found - h1:', !!h1, 'p:', !!p, 'cta:', !!cta);
 
     if (h1) h1.textContent = config.general.heroTitle;
     if (p) p.textContent = config.general.heroSubtitle;
@@ -163,8 +131,6 @@ function populateHero() {
         cta.textContent = config.general.ctaText;
         cta.href = config.general.ctaUrl;
     }
-    
-    console.log('Hero populated successfully');
 }
 
 // Populate featured works carousel
@@ -553,9 +519,9 @@ function populateBio() {
 
         // Add CTA button
         const ctaButton = document.createElement('a');
-        ctaButton.href = config.general.bioPreview.ctaUrl;
+        ctaButton.href = config.pages.bio.ctaUrl;
         ctaButton.className = 'cta-button';
-        ctaButton.textContent = config.general.bioPreview.ctaText;
+        ctaButton.textContent = config.pages.bio.ctaText;
         bioText.appendChild(ctaButton);
     }
 
@@ -844,46 +810,6 @@ function openModal(mediaItem) {
     }
 }
 
-function addGalleryItemClickHandlers() {
-    // Add click handlers to gallery items
-    document.addEventListener('click', function(e) {
-        const galleryItem = e.target.closest('.gallery-item');
-        if (galleryItem) {
-            // Find the media item data from the gallery item
-            const img = galleryItem.querySelector('img');
-            const video = galleryItem.querySelector('video');
-            const iframe = galleryItem.querySelector('iframe');
-
-            let mediaItem = null;
-
-            // Get current gallery type and find the corresponding media item
-            const galleryType = getCurrentGalleryType();
-            if (galleryType && config && config.assets[galleryType]) {
-                const mediaArray = config.assets[galleryType].media;
-
-                if (img && !video && !iframe) {
-                    // Image item
-                    const imgSrc = img.src.split('/').pop(); // Get filename
-                    mediaItem = mediaArray.find(item => item.url.includes(imgSrc) && item.type === 'image');
-                } else if (video) {
-                    // Video item
-                    const videoSrc = video.querySelector('source')?.src || video.src;
-                    const videoFile = videoSrc.split('/').pop(); // Get filename
-                    mediaItem = mediaArray.find(item => item.url.includes(videoFile) && item.type === 'video');
-                } else if (iframe) {
-                    // Embed item
-                    const iframeSrc = iframe.src;
-                    mediaItem = mediaArray.find(item => item.url === iframeSrc);
-                }
-            }
-
-            if (mediaItem) {
-                openModal(mediaItem);
-            }
-        }
-    });
-}
-
 function getCurrentGalleryType() {
     // Check URL parameters first (for gallery.html)
     const urlParams = new URLSearchParams(window.location.search);
@@ -900,140 +826,6 @@ function getCurrentGalleryType() {
     return null;
 }
 
-
-
-document.addEventListener('DOMContentLoaded', async function() {
-    // This listener is disabled to avoid conflicts with the main listener
-    return;
-
-    // Then load config and initialize page
-    await loadConfig();
-    if (config) {
-        // Set default page title and meta
-        document.title = config.general.siteTitle;
-        const metaDesc = document.querySelector('meta[name="description"]');
-        if (metaDesc) metaDesc.content = config.general.metaDescription;
-
-        populateNavigation();
-        populateFooter();
-
-        // Page-specific initialization
-        const path = window.location.pathname;
-        if (path.includes('index.html') || path === '/' || path.endsWith('larkovart/')) {
-            populateHero();
-            populateBioPreview();
-            // Populate featured works title
-            const featuredTitle = document.querySelector('.gallery h2');
-            if (featuredTitle) featuredTitle.textContent = config.general.featuredTitle;
-            // Populate featured works carousel
-            populateFeaturedWorks();
-
-            // Handle responsive carousel re-grouping on window resize
-            let lastBreakpoint = getCurrentBreakpoint();
-            window.addEventListener('resize', () => {
-                const currentBreakpoint = getCurrentBreakpoint();
-                if (currentBreakpoint !== lastBreakpoint) {
-                    lastBreakpoint = currentBreakpoint;
-                    populateFeaturedWorks();
-                }
-            });
-        } else if (path.includes('bio.html')) {
-            populateBio();
-        } else if (path.includes('paintings.html')) {
-            populateGallery('paintings');
-        } else if (path.includes('drawings.html')) {
-            populateGallery('drawings');
-        } else if (path.includes('sculptures.html')) {
-            populateGallery('sculptures');
-        }
-    }
-
-    // Define navigation elements for smooth scrolling
-    const hamburger = document.querySelector('.hamburger');
-    const navMenu = document.querySelector('.nav-menu');
-
-    // Smooth Scrolling for Navigation Links
-    document.addEventListener('click', function(e) {
-        if (e.target.matches('.nav-menu a[href^="#"]')) {
-            e.preventDefault();
-
-            const targetId = e.target.getAttribute('href').substring(1);
-            const targetElement = document.getElementById(targetId);
-
-            if (targetElement) {
-                const offsetTop = targetElement.offsetTop - 80;
-
-                window.scrollTo({
-                    top: offsetTop,
-                    behavior: 'smooth'
-                });
-            }
-
-            // Close mobile menu after clicking
-            if (navMenu.classList.contains('active')) {
-                navMenu.classList.remove('active');
-                hamburger.classList.remove('active');
-            }
-        }
-    });
-
-    // Gallery Image Modal/Lightbox
-    document.addEventListener('click', function(e) {
-        if (e.target.closest('.gallery-item')) {
-            const item = e.target.closest('.gallery-item');
-            const img = item.querySelector('img');
-            if (img) {
-                openLightbox(img.src, img.alt);
-            }
-        }
-    });
-
-    // Intersection Observer for Animations
-    const observerOptions = {
-        threshold: 0.1,
-        rootMargin: '0px 0px -50px 0px'
-    };
-
-    const observer = new IntersectionObserver(function(entries) {
-        entries.forEach(entry => {
-            if (entry.isIntersecting) {
-                entry.target.classList.add('animate-in');
-            }
-        });
-    }, observerOptions);
-
-    // Observe elements for animation
-    const animateElements = document.querySelectorAll('.gallery-item, .bio-content');
-    animateElements.forEach(el => {
-        observer.observe(el);
-    });
-
-    // Parallax Effect for Hero Section
-    window.addEventListener('scroll', function() {
-        const scrolled = window.pageYOffset;
-        const hero = document.querySelector('.hero');
-
-        if (hero) {
-            hero.style.backgroundPositionY = -(scrolled * 0.5) + 'px';
-        }
-    });
-
-    // Lazy Loading for Images
-    const images = document.querySelectorAll('img[data-src]');
-
-    const imageObserver = new IntersectionObserver(function(entries) {
-        entries.forEach(entry => {
-            if (entry.isIntersecting) {
-                const img = entry.target;
-                img.src = img.dataset.src;
-                img.classList.remove('lazy');
-                imageObserver.unobserve(img);
-            }
-        });
-    });
-
-    images.forEach(img => imageObserver.observe(img));
-});
 
 // Lightbox Function
 function openLightbox(src, alt) {
@@ -1151,11 +943,7 @@ document.addEventListener('DOMContentLoaded', async function() {
         const isIndexPage = path.includes('index') || path === '/' || path.endsWith('larkovart/') || 
                            (!path.includes('gallery') && !path.includes('bio') && !path.includes('.html'));
         
-        console.log('Current path:', path);
-        console.log('Is index page:', isIndexPage);
-        
         if (isIndexPage) {
-            console.log('Populating hero...');
             populateHero();
             populateBioPreview();
             // Populate featured works title
