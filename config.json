@@ -112,7 +112,6 @@
           "medium": "Oil on canvas",
           "dimensions": "36\" x 48\"",
           "year": "2024",
-          "quality": "High resolution",
           "sold": false,
           "IsFeatured": true
         },
@@ -124,7 +123,6 @@
           "medium": "Acrylic on canvas",
           "dimensions": "24\" x 30\"",
           "year": "2024",
-          "quality": "High resolution",
           "sold": true,
           "IsFeatured": true
         },
@@ -136,7 +134,6 @@
           "medium": "Oil on canvas",
           "dimensions": "40\" x 30\"",
           "year": "2023",
-          "quality": "High resolution",
           "sold": false,
           "IsFeatured": true
         },
@@ -145,10 +142,9 @@
           "title": "Peonea",
           "url": "images/Peonea.jpg",
           "description": "Peony flower still life",
-          "medium": "Watercolor and gouache",
-          "dimensions": "24\" x 32\"",
+          "medium": "Oleo on canvas",
+          "dimensions": "50 x 50 cm",
           "year": "2024",
-          "quality": "High resolution",
           "sold": true,
           "IsFeatured": true
         },
@@ -160,7 +156,6 @@
           "medium": "Mixed media on canvas",
           "dimensions": "30\" x 40\"",
           "year": "2024",
-          "quality": "High resolution",
           "sold": false,
           "IsFeatured": true
         },
@@ -169,8 +164,6 @@
           "title": "Peonea Time-lapse",
           "url": "videos/Peonea.mp4",
           "description": "Time-lapse of creating the Peonea painting",
-          "quality": "HD",
-          "duration": "3:45",
           "IsFeatured": false
         },
         {
@@ -178,8 +171,6 @@
           "title": "Tortuga Process",
           "url": "videos/Tortuga.mp4",
           "description": "Documentary of the Tortuga painting process",
-          "quality": "HD",
-          "duration": "5:20",
           "IsFeatured": false
         }
       ]
@@ -191,8 +182,6 @@
           "title": "Drawing Process Time-lapse",
           "url": "https://www.youtube.com/embed/jNQXAC9IVRw",
           "description": "Time-lapse of the drawing creation process",
-          "quality": "HD",
-          "duration": "4:15",
           "IsFeatured": false
         },
         {
@@ -203,7 +192,6 @@
           "medium": "Charcoal on paper",
           "dimensions": "24\" x 18\"",
           "year": "2024",
-          "quality": "High resolution",
           "sold": true,
           "IsFeatured": true
         }
@@ -216,8 +204,6 @@
           "title": "Sculpture Making Process",
           "url": "https://www.youtube.com/embed/9bZkp7q19f0",
           "description": "Documentary of the sculpture creation process",
-          "quality": "HD",
-          "duration": "6:45",
           "IsFeatured": false
         },
         {
@@ -228,7 +214,6 @@
           "medium": "Bronze",
           "dimensions": "36\" x 24\" x 18\"",
           "year": "2023",
-          "quality": "High resolution",
           "sold": false,
           "IsFeatured": false
         }
