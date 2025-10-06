@@ -169,76 +169,62 @@ function populateFeaturedWorks() {
     const carouselTrack = document.createElement('div');
     carouselTrack.className = 'carousel-track';
 
-    // Group media based on current viewport size
-    const itemsPerGroup = getItemsPerGroup();
-    const totalGroups = Math.ceil(featuredMedia.length / itemsPerGroup);
+    // Display all items in a single line (no groups)
+    const groupElement = document.createElement('div');
+    groupElement.className = 'carousel-group';
 
-    // Use original media without duplication for finite carousel
-    const displayMedia = [...featuredMedia];
+    featuredMedia.forEach((media, mediaIndex) => {
+        const item = document.createElement('div');
+        item.className = 'carousel-item';
+        item.setAttribute('data-index', mediaIndex);
 
-    // Create carousel groups
-    for (let groupIndex = 0; groupIndex < displayMedia.length; groupIndex += itemsPerGroup) {
-        const groupMedia = displayMedia.slice(groupIndex, groupIndex + itemsPerGroup);
-        const groupElement = document.createElement('div');
-        groupElement.className = 'carousel-group';
-
-        groupMedia.forEach((media, mediaIndex) => {
-            const item = document.createElement('div');
-            item.className = 'carousel-item';
-
-            // Add shadow effect to last visible item in each group
-            if (mediaIndex === itemsPerGroup - 1) {
-                item.classList.add('last-visible');
+        if (media.type === 'image') {
+            const img = document.createElement('img');
+            img.src = media.url;
+            img.alt = media.title;
+            img.loading = 'lazy';
+            item.appendChild(img);
+        } else if (media.type === 'video') {
+            // Handle video items
+            if (media.url.includes('youtube.com') || media.url.includes('youtu.be')) {
+                const iframe = document.createElement('iframe');
+                iframe.src = media.url;
+                iframe.frameBorder = '0';
+                iframe.allow = 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture';
+                iframe.allowFullscreen = true;
+                iframe.loading = 'lazy';
+                item.appendChild(iframe);
+            } else {
+                const video = document.createElement('video');
+                video.src = media.url;
+                video.controls = true;
+                video.preload = 'metadata';
+                item.appendChild(video);
             }
+        }
 
-            if (media.type === 'image') {
-                const img = document.createElement('img');
-                img.src = media.url;
-                img.alt = media.title;
-                img.loading = 'lazy';
-                item.appendChild(img);
-            } else if (media.type === 'video') {
-                // Handle video items
-                if (media.url.includes('youtube.com') || media.url.includes('youtu.be')) {
-                    const iframe = document.createElement('iframe');
-                    iframe.src = media.url;
-                    iframe.frameBorder = '0';
-                    iframe.allow = 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture';
-                    iframe.allowFullscreen = true;
-                    iframe.loading = 'lazy';
-                    item.appendChild(iframe);
-                } else {
-                    const video = document.createElement('video');
-                    video.src = media.url;
-                    video.controls = true;
-                    video.preload = 'metadata';
-                    item.appendChild(video);
-                }
-            }
+        // Add overlay with info
+        const overlay = document.createElement('div');
+        overlay.className = 'carousel-overlay';
 
-            // Add overlay with info
-            const overlay = document.createElement('div');
-            overlay.className = 'carousel-overlay';
+        const h3 = document.createElement('h3');
+        h3.textContent = media.title;
 
-            const h3 = document.createElement('h3');
-            h3.textContent = media.title;
+        const p = document.createElement('p');
+        if (media.medium && media.year) {
+            p.textContent = `${media.medium}, ${media.year}`;
+        } else if (media.description) {
+            p.textContent = media.description;
+        }
 
-            const p = document.createElement('p');
-            if (media.medium && media.year) {
-                p.textContent = `${media.medium}, ${media.year}`;
-            } else if (media.description) {
-                p.textContent = media.description;
-            }
+        overlay.appendChild(h3);
+        overlay.appendChild(p);
+        item.appendChild(overlay);
 
-            overlay.appendChild(h3);
-            overlay.appendChild(p);
-            item.appendChild(overlay);
+        groupElement.appendChild(item);
+    });
 
-            groupElement.appendChild(item);
-        });
-
-        carouselTrack.appendChild(groupElement);
-    }
+    carouselTrack.appendChild(groupElement);
 
     carouselContainer.appendChild(carouselTrack);
 
@@ -256,12 +242,12 @@ function populateFeaturedWorks() {
     carouselContainer.appendChild(prevButton);
     carouselContainer.appendChild(nextButton);
 
-    // Add indicators
+    // Remove indicators since we're not using groups anymore
+    // Add indicators based on number of items
     const indicators = document.createElement('div');
     indicators.className = 'carousel-indicators';
 
-    // Show indicators for actual groups (not including the duplicated one)
-    for (let i = 0; i < totalGroups; i++) {
+    for (let i = 0; i < featuredMedia.length; i++) {
         const indicator = document.createElement('button');
         indicator.className = 'carousel-indicator';
         if (i === 0) indicator.classList.add('active');
@@ -274,50 +260,31 @@ function populateFeaturedWorks() {
     featuredGrid.appendChild(carouselContainer);
 
     // Initialize carousel functionality
-    initializeCarousel(featuredGrid);
+    initializeCarousel(featuredGrid, featuredMedia.length);
 }
 
 // Initialize carousel functionality
-function initializeCarousel(carouselElement) {
+function initializeCarousel(carouselElement, totalItems) {
     const track = carouselElement.querySelector('.carousel-track');
-    const groups = carouselElement.querySelectorAll('.carousel-group');
+    const items = carouselElement.querySelectorAll('.carousel-item');
     const prevBtn = carouselElement.querySelector('.carousel-prev');
     const nextBtn = carouselElement.querySelector('.carousel-next');
     const indicators = carouselElement.querySelectorAll('.carousel-indicator');
+    const container = carouselElement.querySelector('.carousel-container');
 
-    if (!track || groups.length === 0) return;
-
-    // Set track width to accommodate all groups
-    track.style.width = `${groups.length * 100}%`;
-    groups.forEach(group => {
-        group.style.width = `${100 / groups.length}%`;
-    });
+    if (!track || items.length === 0) return;
 
     let currentIndex = 0;
-    const totalGroups = groups.length;
+    let currentOffset = 0;
 
     function updateCarousel() {
-        // Update track position - translate by percentage
-        const translatePercent = -(currentIndex * (100 / totalGroups));
-        track.style.transform = `translateX(${translatePercent}%)`;
+        // Smooth transition
+        track.style.transition = 'transform 0.5s ease-in-out';
+        track.style.transform = `translateX(${currentOffset}px)`;
 
         // Update indicators
         indicators.forEach((indicator, index) => {
             indicator.classList.toggle('active', index === currentIndex);
-        });
-
-        // Update shadow effect for last visible items
-        groups.forEach((group, groupIndex) => {
-            const items = group.querySelectorAll('.carousel-item');
-            const itemsPerGroup = getItemsPerGroup();
-
-            items.forEach((item, itemIndex) => {
-                if (itemIndex === Math.min(itemsPerGroup - 1, items.length - 1) && groupIndex === currentIndex) {
-                    item.classList.add('last-visible');
-                } else {
-                    item.classList.remove('last-visible');
-                }
-            });
         });
 
         // Update navigation button states
@@ -326,13 +293,19 @@ function initializeCarousel(carouselElement) {
             prevBtn.style.opacity = currentIndex === 0 ? '0.5' : '1';
         }
         if (nextBtn) {
-            nextBtn.disabled = currentIndex === totalGroups - 1;
-            nextBtn.style.opacity = currentIndex === totalGroups - 1 ? '0.5' : '1';
+            nextBtn.disabled = currentIndex === items.length - 1;
+            nextBtn.style.opacity = currentIndex === items.length - 1 ? '0.5' : '1';
         }
     }
 
     function nextSlide() {
-        if (currentIndex < totalGroups - 1) {
+        if (currentIndex < items.length - 1) {
+            const currentItem = items[currentIndex];
+            const gap = 4; // 0.25rem gap in pixels (approximate)
+            
+            // Move by the width of the current item plus gap
+            const itemWidth = currentItem.offsetWidth;
+            currentOffset -= (itemWidth + gap);
             currentIndex++;
             updateCarousel();
         }
@@ -341,11 +314,36 @@ function initializeCarousel(carouselElement) {
     function prevSlide() {
         if (currentIndex > 0) {
             currentIndex--;
+            const prevItem = items[currentIndex];
+            const gap = 4; // 0.25rem gap in pixels (approximate)
+            
+            // Move back by the width of the previous item plus gap
+            const itemWidth = prevItem.offsetWidth;
+            currentOffset += (itemWidth + gap);
             updateCarousel();
         }
     }
 
     function goToSlide(index) {
+        if (index === currentIndex) return;
+        
+        // Calculate cumulative offset to target index
+        let newOffset = 0;
+        const gap = 4;
+        
+        if (index > currentIndex) {
+            // Moving forward
+            for (let i = currentIndex; i < index; i++) {
+                newOffset -= (items[i].offsetWidth + gap);
+            }
+        } else {
+            // Moving backward
+            for (let i = currentIndex - 1; i >= index; i--) {
+                newOffset += (items[i].offsetWidth + gap);
+            }
+        }
+        
+        currentOffset += newOffset;
         currentIndex = index;
         updateCarousel();
     }
@@ -358,21 +356,16 @@ function initializeCarousel(carouselElement) {
         indicator.addEventListener('click', () => goToSlide(index));
     });
 
-    // Auto-play (optional) - disabled for finite carousel
-    // let autoplayInterval = setInterval(nextSlide, 5000);
-
-    // Pause on hover
-    carouselElement.addEventListener('mouseenter', () => {
-        // clearInterval(autoplayInterval);
-    });
-
-    carouselElement.addEventListener('mouseleave', () => {
-        // autoplayInterval = setInterval(nextSlide, 5000);
-    });
-
     // Handle window resize
+    let resizeTimeout;
     window.addEventListener('resize', () => {
-        updateCarousel();
+        clearTimeout(resizeTimeout);
+        resizeTimeout = setTimeout(() => {
+            // Reset position on resize
+            currentOffset = 0;
+            currentIndex = 0;
+            updateCarousel();
+        }, 250);
     });
 
     // Wait for images to load before initializing
@@ -380,30 +373,23 @@ function initializeCarousel(carouselElement) {
     let loadedImages = 0;
     const totalImages = images.length;
 
+    function checkAllImagesLoaded() {
+        loadedImages++;
+        if (loadedImages === totalImages) {
+            setTimeout(() => updateCarousel(), 100);
+        }
+    }
+
     if (totalImages > 0) {
         images.forEach(img => {
             if (img.complete) {
-                loadedImages++;
-                if (loadedImages === totalImages) {
-                    updateCarousel();
-                }
+                checkAllImagesLoaded();
             } else {
-                img.addEventListener('load', () => {
-                    loadedImages++;
-                    if (loadedImages === totalImages) {
-                        updateCarousel();
-                    }
-                });
-                img.addEventListener('error', () => {
-                    loadedImages++;
-                    if (loadedImages === totalImages) {
-                        updateCarousel();
-                    }
-                });
+                img.addEventListener('load', checkAllImagesLoaded);
+                img.addEventListener('error', checkAllImagesLoaded);
             }
         });
     } else {
-        // No images, initialize immediately
         updateCarousel();
     }
 }

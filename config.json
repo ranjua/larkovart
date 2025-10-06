@@ -110,7 +110,7 @@
           "url": "images/Atitlan.jpg",
           "description": "Lake Atitlan landscape painting",
           "medium": "Oil on canvas",
-          "dimensions": "36\" x 48\"",
+          "dimensions": "50 x 50 cm",
           "year": "2024",
           "sold": false,
           "IsFeatured": true
@@ -121,9 +121,9 @@
           "url": "images/Gato.jpg",
           "description": "Cat portrait study",
           "medium": "Acrylic on canvas",
-          "dimensions": "24\" x 30\"",
+          "dimensions": "50 x 50 cm",
           "year": "2024",
-          "sold": true,
+          "sold": false,
           "IsFeatured": true
         },
         {
@@ -132,8 +132,8 @@
           "url": "images/Mar2.jpg",
           "description": "Seascape painting",
           "medium": "Oil on canvas",
-          "dimensions": "40\" x 30\"",
-          "year": "2023",
+          "dimensions": "50 x 50 cm",
+          "year": "2025",
           "sold": false,
           "IsFeatured": true
         },
@@ -154,9 +154,9 @@
           "url": "images/Quetzal.jpg",
           "description": "Quetzal bird painting",
           "medium": "Mixed media on canvas",
-          "dimensions": "30\" x 40\"",
+          "dimensions": "50 x 50 cm",
           "year": "2024",
-          "sold": false,
+          "sold": true,
           "IsFeatured": true
         },
         {
