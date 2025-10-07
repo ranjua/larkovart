@@ -210,6 +210,10 @@ function populateFeaturedWorks() {
         const h3 = document.createElement('h3');
         h3.textContent = media.title;
 
+        const status = document.createElement('div');
+        status.className = `item-status ${media.sold ? 'sold' : 'available'}`;
+        status.textContent = media.sold ? 'Sold' : 'Available';
+
         const p = document.createElement('p');
         if (media.medium && media.year) {
             p.textContent = `${media.medium}, ${media.year}`;
@@ -218,6 +222,7 @@ function populateFeaturedWorks() {
         }
 
         overlay.appendChild(h3);
+        overlay.appendChild(status);
         overlay.appendChild(p);
         item.appendChild(overlay);
 
@@ -302,7 +307,7 @@ function initializeCarousel(carouselElement, totalItems) {
         if (currentIndex < items.length - 1) {
             const currentItem = items[currentIndex];
             const gap = 4; // 0.25rem gap in pixels (approximate)
-            
+
             // Move by the width of the current item plus gap
             const itemWidth = currentItem.offsetWidth;
             currentOffset -= (itemWidth + gap);
@@ -316,7 +321,7 @@ function initializeCarousel(carouselElement, totalItems) {
             currentIndex--;
             const prevItem = items[currentIndex];
             const gap = 4; // 0.25rem gap in pixels (approximate)
-            
+
             // Move back by the width of the previous item plus gap
             const itemWidth = prevItem.offsetWidth;
             currentOffset += (itemWidth + gap);
@@ -326,11 +331,11 @@ function initializeCarousel(carouselElement, totalItems) {
 
     function goToSlide(index) {
         if (index === currentIndex) return;
-        
+
         // Calculate cumulative offset to target index
         let newOffset = 0;
         const gap = 4;
-        
+
         if (index > currentIndex) {
             // Moving forward
             for (let i = currentIndex; i < index; i++) {
@@ -342,7 +347,7 @@ function initializeCarousel(carouselElement, totalItems) {
                 newOffset += (items[i].offsetWidth + gap);
             }
         }
-        
+
         currentOffset += newOffset;
         currentIndex = index;
         updateCarousel();
@@ -926,9 +931,9 @@ document.addEventListener('DOMContentLoaded', async function() {
 
         // Page-specific initialization
         const path = window.location.pathname;
-        const isIndexPage = path.includes('index') || path === '/' || path.endsWith('larkovart/') || 
+        const isIndexPage = path.includes('index') || path === '/' || path.endsWith('larkovart/') ||
                            (!path.includes('gallery') && !path.includes('bio') && !path.includes('.html'));
-        
+
         if (isIndexPage) {
             populateHero();
             populateBioPreview();
@@ -972,3 +977,250 @@ function setupHamburgerToggle() {
         });
     }
 }
+
+// Artistic Background Generator - Mathematical Marbling (Based on The Coding Train Challenge #183)
+class ArtisticBackground {
+    constructor(canvas) {
+        this.canvas = canvas;
+        this.ctx = canvas.getContext('2d');
+        this.width = canvas.width;
+        this.height = canvas.height;
+        this.time = 0;
+        this.animationId = null;
+
+        // Marbling parameters based on the challenge
+        this.inkDrops = [];
+        this.waveFrequency = 0.01;
+        this.amplitude = 30;
+        this.colors = [
+            [25, 50, 80, 0.8],   // Deep blue
+            [50, 80, 110, 0.7],  // Medium blue
+            [70, 110, 140, 0.6], // Light blue
+            [90, 130, 160, 0.5], // Pale blue
+            [30, 60, 90, 0.9],   // Dark cyan
+            [60, 100, 130, 0.8]  // Cyan
+        ];
+
+        this.init();
+    }
+
+    init() {
+        this.resizeCanvas();
+        this.createInkDrops();
+        this.generateMarbling();
+        this.animate();
+        window.addEventListener('resize', () => this.resizeCanvas());
+    }
+
+    resizeCanvas() {
+        const rect = this.canvas.getBoundingClientRect();
+        this.canvas.width = rect.width || 800;
+        this.canvas.height = rect.height || 400;
+        this.width = this.canvas.width;
+        this.height = this.canvas.height;
+    }
+
+    createInkDrops() {
+        // Create ink drops similar to the challenge implementation
+        this.inkDrops = [];
+
+        // Add central drops
+        for (let i = 0; i < 4; i++) {
+            this.inkDrops.push({
+                x: this.width * 0.3 + Math.random() * this.width * 0.4,
+                y: this.height * 0.3 + Math.random() * this.height * 0.4,
+                radius: 20 + Math.random() * 40,
+                color: this.colors[Math.floor(Math.random() * this.colors.length)],
+                phase: Math.random() * Math.PI * 2
+            });
+        }
+
+        // Add corner and edge drops (same properties as central drops)
+        const cornerPositions = [
+            // Top-left corner
+            { x: this.width * 0.1 + Math.random() * this.width * 0.2, y: this.height * 0.1 + Math.random() * this.height * 0.2 },
+            // Top-right corner
+            { x: this.width * 0.7 + Math.random() * this.width * 0.2, y: this.height * 0.1 + Math.random() * this.height * 0.2 },
+            // Bottom-left corner
+            { x: this.width * 0.1 + Math.random() * this.width * 0.2, y: this.height * 0.7 + Math.random() * this.height * 0.2 },
+            // Bottom-right corner
+            { x: this.width * 0.7 + Math.random() * this.width * 0.2, y: this.height * 0.7 + Math.random() * this.height * 0.2 },
+            // Left edge (middle)
+            { x: this.width * 0.05 + Math.random() * this.width * 0.15, y: this.height * 0.4 + Math.random() * this.height * 0.2 },
+            // Right edge (middle)
+            { x: this.width * 0.8 + Math.random() * this.width * 0.15, y: this.height * 0.4 + Math.random() * this.height * 0.2 },
+            // Top edge (middle)
+            { x: this.width * 0.4 + Math.random() * this.width * 0.2, y: this.height * 0.05 + Math.random() * this.height * 0.15 },
+            // Bottom edge (middle)
+            { x: this.width * 0.4 + Math.random() * this.width * 0.2, y: this.height * 0.8 + Math.random() * this.height * 0.15 }
+        ];
+
+        for (let pos of cornerPositions) {
+            this.inkDrops.push({
+                x: pos.x,
+                y: pos.y,
+                radius: 20 + Math.random() * 40,
+                color: this.colors[Math.floor(Math.random() * this.colors.length)],
+                phase: Math.random() * Math.PI * 2
+            });
+        }
+
+        // Add scattered drops
+        for (let i = 0; i < 6; i++) {
+            this.inkDrops.push({
+                x: Math.random() * this.width,
+                y: Math.random() * this.height,
+                radius: 10 + Math.random() * 30,
+                color: this.colors[Math.floor(Math.random() * this.colors.length)],
+                phase: Math.random() * Math.PI * 2
+            });
+        }
+    }
+
+    generateMarbling() {
+        // Clear canvas
+        this.ctx.clearRect(0, 0, this.width, this.height);
+
+        // Create base gradient
+        this.drawBaseGradient();
+
+        // Draw the marbling pattern using mathematical functions
+        this.drawMarblingPattern();
+    }
+
+    drawBaseGradient() {
+        const gradient = this.ctx.createLinearGradient(0, 0, this.width, this.height);
+        gradient.addColorStop(0, 'rgba(10, 25, 40, 0.1)');
+        gradient.addColorStop(0.5, 'rgba(20, 45, 70, 0.05)');
+        gradient.addColorStop(1, 'rgba(15, 35, 55, 0.1)');
+
+        this.ctx.fillStyle = gradient;
+        this.ctx.fillRect(0, 0, this.width, this.height);
+    }
+
+    drawMarblingPattern() {
+        const imageData = this.ctx.createImageData(this.width, this.height);
+        const data = imageData.data;
+
+        for (let y = 0; y < this.height; y++) {
+            for (let x = 0; x < this.width; x++) {
+                const pixelIndex = (y * this.width + x) * 4;
+
+                // Calculate the marbling effect for this pixel
+                const color = this.calculateMarblingColor(x, y);
+
+                data[pixelIndex] = color.r;     // Red
+                data[pixelIndex + 1] = color.g; // Green
+                data[pixelIndex + 2] = color.b; // Blue
+                data[pixelIndex + 3] = color.a; // Alpha
+            }
+        }
+
+        this.ctx.putImageData(imageData, 0, 0);
+    }
+
+    calculateMarblingColor(x, y) {
+        let totalInfluence = 0;
+        let r = 0, g = 0, b = 0, a = 0;
+
+        // Calculate influence from each ink drop
+        for (const drop of this.inkDrops) {
+            const dx = x - drop.x;
+            const dy = y - drop.y;
+            const distance = Math.sqrt(dx * dx + dy * dy);
+
+            if (distance < drop.radius * 2) {
+                // Calculate wave-based influence (mathematical marbling core)
+                const normalizedDistance = distance / (drop.radius * 5);
+                const waveEffect = Math.sin(normalizedDistance * Math.PI * 4 + this.time * 0.01 + drop.phase) * 0.5 + 0.5;
+
+                // Add turbulence for more organic look
+                const turbulence = Math.sin(x * this.waveFrequency + this.time * 0.005) *
+                                 Math.cos(y * this.waveFrequency * 0.7 + this.time * 0.007) * 0.03;
+
+                const influence = (1 - normalizedDistance) * (waveEffect + turbulence + 5);
+
+                if (influence > 0) {
+                    r += drop.color[0] * influence * drop.color[3];
+                    g += drop.color[1] * influence * drop.color[3];
+                    b += drop.color[2] * influence * drop.color[3];
+                    a += influence * drop.color[3];
+                    totalInfluence += influence;
+                }
+            }
+        }
+
+        // Normalize colors
+        if (totalInfluence > 0) {
+            r = Math.min(255, r / totalInfluence);
+            g = Math.min(255, g / totalInfluence);
+            b = Math.min(255, b / totalInfluence);
+            a = Math.min(255, (a / totalInfluence) * 200); // Scale alpha for subtlety
+        } else {
+            // Background color for areas with no influence
+            r = 15 + Math.sin(x * 0.01 + y * 0.01) * 5;
+            g = 30 + Math.cos(x * 0.008 + y * 0.012) * 8;
+            b = 45 + Math.sin(x * 0.006 + y * 0.009) * 6;
+            a = 20;
+        }
+
+        return { r: Math.floor(r), g: Math.floor(g), b: Math.floor(b), a: Math.floor(a) };
+    }
+
+    animate() {
+        this.time += 1;
+
+        // Regenerate marbling every 45 frames for smooth animation
+        if (this.time % 45 === 0) {
+            this.generateMarbling();
+        }
+
+        // Occasionally add new ink drops for dynamic effect
+        if (this.time % 300 === 0) {
+            this.addRandomInkDrop();
+        }
+
+        this.animationId = requestAnimationFrame(() => this.animate());
+    }
+
+    addRandomInkDrop() {
+        this.inkDrops.push({
+            x: Math.random() * this.width,
+            y: Math.random() * this.height,
+            radius: 15 + Math.random() * 25,
+            color: this.colors[Math.floor(Math.random() * this.colors.length)],
+            phase: Math.random() * Math.PI * 2
+        });
+
+        // Limit the number of drops to prevent performance issues
+        if (this.inkDrops.length > 50) {
+            this.inkDrops.shift();
+        }
+    }
+
+    destroy() {
+        if (this.animationId) {
+            cancelAnimationFrame(this.animationId);
+        }
+        window.removeEventListener('resize', () => this.resizeCanvas());
+    }
+}
+
+// Initialize artistic background when DOM is loaded
+let artisticBackground;
+document.addEventListener('DOMContentLoaded', function() {
+    const heroCanvas = document.getElementById('hero-canvas');
+    if (heroCanvas) {
+        artisticBackground = new ArtisticBackground(heroCanvas);
+    }
+});
+
+// Fallback initialization after page load
+window.addEventListener('load', function() {
+    if (!artisticBackground) {
+        const heroCanvas = document.getElementById('hero-canvas');
+        if (heroCanvas) {
+            artisticBackground = new ArtisticBackground(heroCanvas);
+        }
+    }
+});
