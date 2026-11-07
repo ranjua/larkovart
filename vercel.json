@@ -2,7 +2,7 @@
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "framework": "nextjs",
   "installCommand": "npm ci",
-  "buildCommand": "node scripts/verify-paypal-sandbox.mjs && node scripts/setup-recurrente-webhook.mjs && npm run build",
+  "buildCommand": "node scripts/verify-paypal-sandbox.mjs && node scripts/setup-recurrente-webhook.mjs && node scripts/verify-photo.mjs && npm run build",
   "git": {
     "deploymentEnabled": {
       "main": false,

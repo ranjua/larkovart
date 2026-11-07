@@ -1,5 +1,5 @@
 """Admin photo publishing against an isolated database; no provider writes."""
-import os, secrets, signal, subprocess, tempfile, time
+import os, signal, subprocess, tempfile, time
 from pathlib import Path
 from urllib.request import urlopen
 from playwright.sync_api import sync_playwright, expect
@@ -7,8 +7,7 @@ from playwright.sync_api import sync_playwright, expect
 ROOT = Path(__file__).resolve().parents[1]
 BASE = 'http://127.0.0.1:3210'
 with tempfile.TemporaryDirectory(prefix='larkovart-photo-') as directory:
-    password = secrets.token_urlsafe(32)
-    env = {**os.environ, 'DATABASE_URL': f'file:{directory}/test.db', 'DATABASE_ENVIRONMENT': 'development', 'STUDIO_PASSWORD': password, 'CLOUDINARY_CLOUD_NAME':'', 'CLOUDINARY_API_KEY':'', 'CLOUDINARY_API_SECRET':''}
+    env = {**os.environ, 'DATABASE_URL': f'file:{directory}/test.db', 'DATABASE_ENVIRONMENT': 'development', 'RESEND_API_KEY': 're_test_local_only', 'LARKOVART_TEST_EMAIL_CAPTURE': str(Path(directory)/'email.json'), 'NODE_OPTIONS': '--import='+str(ROOT/'tests/helpers/resend-fetch.mjs'), 'CLOUDINARY_CLOUD_NAME':'', 'CLOUDINARY_API_KEY':'', 'CLOUDINARY_API_SECRET':''}
     with open(Path(directory)/'server.log', 'w+') as log:
         server = subprocess.Popen(['npm','run','start','--','--port','3210'], cwd=ROOT, env=env, stdout=log, stderr=log, start_new_session=True)
         try:
@@ -23,8 +22,16 @@ with tempfile.TemporaryDirectory(prefix='larkovart-photo-') as directory:
                 page.on('pageerror',lambda e:errors.append(str(e)))
                 page.goto(BASE+'/studio')
                 assert page.request.post(BASE+'/api/studio/photo',headers={'Origin':BASE}).status == 403
-                page.get_by_label('Studio password').fill(password)
-                page.get_by_role('button',name='Enter studio').click()
+                assert page.request.post(BASE+'/api/studio/session', data={'password':'old-password'}, headers={'Origin':BASE}).status == 400
+                assert page.request.post(BASE+'/api/studio/session', data={'action':'request','email':'someone@example.test'}, headers={'Origin':BASE}).status == 400
+                page.get_by_role('button', name='Send sign-in code').click()
+                expect(page.get_by_label('Email sign-in code')).to_be_visible()
+                email = __import__('json').loads((Path(directory)/'email.json').read_text())
+                assert email['to'] == ['larkova.art@gmail.com']
+                challenge_cookies = page.context.cookies()
+                assert page.request.post(BASE+'/api/studio/session', data={'action':'request'}, headers={'Origin':BASE}).status == 429
+                page.get_by_label('Email sign-in code').fill(email['code'])
+                page.get_by_role('button',name='Verify code').click()
                 expect(page.locator('.studio-draft')).to_be_visible()
                 assert page.request.post(BASE+'/api/studio/photo',headers={'Origin':BASE}).status == 503
                 form=page.locator('.studio-draft')
@@ -41,9 +48,20 @@ with tempfile.TemporaryDirectory(prefix='larkovart-photo-') as directory:
                 page.get_by_role('link',name='Photo workflow test',exact=True).click()
                 expect(page.get_by_text('30 × 40 cm',exact=True)).to_be_visible()
                 expect(page.locator('.detail-description')).to_contain_text('30 × 40 cm')
+                replay = browser.new_context()
+                replay.add_cookies(challenge_cookies)
+                assert replay.request.post(BASE+'/api/studio/session', data={'action':'verify','code':email['code']}, headers={'Origin':BASE}).status == 401
+                other = browser.new_context()
+                other.add_cookies(page.context.cookies())
+                page.goto(BASE+'/studio')
+                page.get_by_role('button',name='Sign out').click()
+                expect(page.get_by_role('button',name='Send sign-in code')).to_be_visible()
+                other_page = other.new_page()
+                other_page.goto(BASE+'/studio')
+                expect(other_page.get_by_role('button',name='Send sign-in code')).to_be_visible()
                 assert not errors,errors
                 browser.close()
-                print('PASS: private admin, disconnected provider status, original upload, default price, automatic six-language facts and publication.')
+                print('PASS: OTP-only login, fixed recipient, resend throttling, replay rejection, logout revocation, original upload, default price and automatic publication.')
         finally:
             os.killpg(server.pid,signal.SIGTERM)
             server.wait(timeout=20)

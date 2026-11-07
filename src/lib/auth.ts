@@ -1,55 +1,46 @@
-import { createHmac, timingSafeEqual, createHash } from "node:crypto";
-import { cookies } from "next/headers";
-const cookieName = "larkovart_studio";
-function hash(s: string) {
-  return createHash("sha256").update(s).digest();
-}
-export function checkPassword(password: string) {
-  const secret = process.env.STUDIO_PASSWORD;
-  return (
-    !!secret &&
-    secret.length >= 24 &&
-    timingSafeEqual(hash(password), hash(secret))
+import { cookies, headers } from "next/headers";
+import {
+  authScope,
+  revokeStudioSession,
+  validStudioSession,
+  SESSION_LIFETIME,
+} from "./studio-otp.ts";
+export const sessionCookie = "larkovart_studio_otp";
+export const challengeCookie = "larkovart_studio_challenge";
+export const cookieOptions = {
+  httpOnly: true,
+  secure: process.env.NODE_ENV === "production",
+  sameSite: "strict" as const,
+  path: "/",
+};
+export async function session() {
+  const token = (await cookies()).get(sessionCookie)?.value;
+  if (!token) return false;
+  return validStudioSession(
+    token,
+    authScope((await headers()).get("host") || ""),
   );
 }
-function signature(value: string) {
-  return createHmac("sha256", process.env.STUDIO_PASSWORD || "")
-    .update(value)
-    .digest("hex");
-}
-export async function session() {
-  if (!process.env.STUDIO_PASSWORD || process.env.STUDIO_PASSWORD.length < 24)
-    return false;
-  const token = (await cookies()).get(cookieName)?.value;
-  if (!token) return false;
-  const [expires, sig] = token.split(".");
-  if (
-    !expires ||
-    !sig ||
-    !/^\d+$/.test(expires) ||
-    Number(expires) < Date.now()
-  )
-    return false;
-  return timingSafeEqual(hash(sig), hash(signature(expires)));
-}
-export async function login() {
-  const expires = String(Date.now() + 8 * 60 * 60 * 1000);
-  (await cookies()).set(cookieName, `${expires}.${signature(expires)}`, {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
-    sameSite: "strict",
-    path: "/",
-    maxAge: 8 * 60 * 60,
+export async function login(token: string) {
+  const jar = await cookies();
+  jar.set(sessionCookie, token, {
+    ...cookieOptions,
+    maxAge: SESSION_LIFETIME / 1000,
   });
+  jar.delete(challengeCookie);
+  jar.delete("larkovart_studio");
 }
 export async function logout() {
-  (await cookies()).delete(cookieName);
+  const jar = await cookies();
+  const token = jar.get(sessionCookie)?.value;
+  if (token) await revokeStudioSession(token);
+  jar.delete(sessionCookie);
+  jar.delete(challengeCookie);
+  jar.delete("larkovart_studio");
 }
 export function sameOrigin(request: Request) {
   const origin = request.headers.get("origin");
   const expected = new URL(request.url);
-  // Next's internal URL can use localhost even when the browser uses 127.0.0.1.
-  // Compare the browser Origin against the actual HTTP Host, including its port.
   expected.host = request.headers.get("host") || expected.host;
   if (process.env.VERCEL) {
     const protocol = request.headers.get("x-forwarded-proto");

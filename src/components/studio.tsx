@@ -45,6 +45,7 @@ export function Studio({
     pt: "",
   });
   const [facts, setFacts] = useState("");
+  const [codeSent, setCodeSent] = useState(false);
   async function signIn(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
     const form = e.currentTarget;
@@ -54,10 +55,22 @@ export function Studio({
       const r = await fetch("/api/studio/session", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(Object.fromEntries(new FormData(form))),
+        body: JSON.stringify({
+          action: codeSent ? "verify" : "request",
+          code: codeSent
+            ? String(new FormData(form).get("code") || "")
+            : undefined,
+        }),
       });
-      if (r.ok) router.refresh();
-      else setMessage((await r.json()).error);
+      if (r.ok) {
+        if (codeSent) router.refresh();
+        else {
+          setCodeSent(true);
+          setMessage(
+            "Code sent to larkova.art@gmail.com. Check your inbox and spam folder.",
+          );
+        }
+      } else setMessage((await r.json()).error);
     } catch {
       setMessage("Unable to sign in.");
     } finally {
@@ -155,30 +168,51 @@ export function Studio({
           More time to paint.
         </h1>
         <p className="studio-note">
-          Sign in to manage your development catalog and test orders. Set
-          STUDIO_PASSWORD (at least 24 characters) in your local environment to
-          enable access.
+          Sign in with a one-time code sent to larkova.art@gmail.com. No
+          password needed.
         </p>
         <form onSubmit={signIn}>
-          <label>
-            Studio password
-            <input
-              name="password"
-              type="password"
-              required
-              autoComplete="current-password"
-              maxLength={512}
-            />
-          </label>
+          {codeSent && (
+            <label>
+              Email sign-in code
+              <input
+                name="code"
+                type="text"
+                inputMode="numeric"
+                pattern="[0-9]{6}"
+                required
+                autoComplete="one-time-code"
+                minLength={6}
+                maxLength={6}
+                autoFocus
+              />
+            </label>
+          )}
           {message && (
             <p role="alert" className="form-error">
               {message}
             </p>
           )}
           <button className="button button-dark full-width" disabled={busy}>
-            Enter studio →
+            {busy
+              ? "Please wait…"
+              : codeSent
+                ? "Verify code →"
+                : "Send sign-in code →"}
           </button>
         </form>
+        {codeSent && (
+          <button
+            type="button"
+            disabled={busy}
+            onClick={() => {
+              setCodeSent(false);
+              setMessage("");
+            }}
+          >
+            Request a new code
+          </button>
+        )}
       </div>
     );
   return (
@@ -198,8 +232,9 @@ export function Studio({
         </button>
       </div>
       <p className="studio-note">
-        Development data only. Sample prices. No real payments, labels,
-        notifications or collections are sent.
+        Payments remain in sandbox and delivery configuration is paused.
+        Published artworks appear in the preview gallery. Sign-in emails are
+        real.
       </p>
       <div className="studio-status">
         <div>

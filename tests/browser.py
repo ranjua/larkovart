@@ -1,7 +1,6 @@
 """Browser acceptance checks against an isolated local DEVELOPMENT database."""
 import json
 import os
-import secrets
 import signal
 import subprocess
 import tempfile
@@ -15,9 +14,8 @@ BASE = 'http://127.0.0.1:3200'
 
 def run():
     with tempfile.TemporaryDirectory(prefix='larkovart-dev-browser-') as directory:
-        password = secrets.token_urlsafe(32)
         env = {**os.environ, 'DATABASE_URL': f'file:{directory}/test.db',
-               'DATABASE_ENVIRONMENT': 'development', 'STUDIO_PASSWORD': password,
+               'DATABASE_ENVIRONMENT': 'development', 'RESEND_API_KEY': 're_test_local_only', 'LARKOVART_TEST_EMAIL_CAPTURE': str(Path(directory)/'email.json'), 'NODE_OPTIONS': '--import='+str(ROOT/'tests/helpers/resend-fetch.mjs'),
                'OPENAI_API_KEY': '', 'OPENAI_TEXT_MODEL': '', 'LARKOVART_BROWSER_TEST':''}
         with open(Path(directory)/'server.log', 'w+') as log:
             server = subprocess.Popen(['npm', 'run', 'start', '--', '--port', '3200'],
@@ -76,8 +74,10 @@ def run():
                     denied=page.request.post(BASE+'/api/orders',data={},headers={'Origin':'https://example.invalid'})
                     assert denied.status == 403
                     page.goto(BASE+'/studio',wait_until='networkidle')
-                    page.get_by_label('Studio password').fill(password)
-                    page.get_by_role('button',name='Enter studio').click()
+                    page.get_by_role('button', name='Send sign-in code').click()
+                    expect(page.get_by_label('Email sign-in code')).to_be_visible()
+                    page.get_by_label('Email sign-in code').fill(__import__('json').loads((Path(directory)/'email.json').read_text())['code'])
+                    page.get_by_role('button',name='Verify code').click()
                     expect(page.get_by_role('heading',name='Good things are taking shape.')).to_be_visible()
                     # A test quote is recorded and leaves the original available.
                     page.goto(BASE+'/en/checkout/mar',wait_until='networkidle')

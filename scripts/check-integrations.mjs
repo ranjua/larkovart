@@ -4,7 +4,10 @@ const status = (key) => (process.env[key] ? "configured" : "MISSING");
 for (const key of [
   "DATABASE_URL",
   "DATABASE_ENVIRONMENT",
-  "STUDIO_PASSWORD",
+  "RESEND_API_KEY",
+  "CLOUDINARY_CLOUD_NAME",
+  "CLOUDINARY_API_KEY",
+  "CLOUDINARY_API_SECRET",
   "APP_URL",
   "RECURRENTE_SECRET_KEY",
   "RECURRENTE_SANDBOX_ID",

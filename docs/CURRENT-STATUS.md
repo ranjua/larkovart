@@ -1,14 +1,26 @@
 # Current status — 2026-11-07
 
+## Admin authentication
+
+Admin authentication uses email OTP only for
+`larkova.art@gmail.com`. Password login and old password cookies are rejected;
+short-lived browser-bound codes, persistent throttling and revocable sessions
+are implemented. Local authentication/security tests pass. Real email delivery
+requires the owner's `RESEND_API_KEY`; instructions: `docs/ADMIN-LOGIN.md`.
+Cloudinary variables were confirmed present in all three Vercel environments;
+deployment now runs a reusable original/enhanced image connection check without
+publishing a test artwork. External verification results must be checked in the
+deployment logs before claiming full connection.
+
 ## Photo enhancement and publishing
 
 Private `/studio` now includes simplified photo upload, USD 100 default price,
 automatic factual descriptions in six languages and publishing checked by default.
 Cloudinary signed direct uploads, AI exposure/color enhancement, original-photo
-preservation and provider receipt verification are implemented. No Cloudinary
-environment variables are configured yet: real enhancement remains unverified
-until the owner connects the free account. Original uploads remain available with
-an explicit disconnected status. Setup/cost details: `docs/PHOTO-ENHANCEMENT.md`.
+preservation and provider receipt verification are implemented. Cloudinary
+variables are configured in Preview, Production and Development. Runtime API
+verification is pending the deployment check. Original uploads remain available
+when enhancement is disconnected. Setup/cost details: `docs/PHOTO-ENHANCEMENT.md`.
 
 ## Delivery: paused at owner's request
 

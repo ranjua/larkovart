@@ -1,6 +1,5 @@
 """Sandbox UI and missing-credential checks. Makes no external provider calls."""
 import os
-import secrets
 import signal
 import subprocess
 import tempfile
@@ -14,9 +13,8 @@ BASE = 'http://127.0.0.1:3300'
 
 def run():
     with tempfile.TemporaryDirectory(prefix='larkovart-dev-sandbox-browser-') as directory:
-        password = secrets.token_urlsafe(32)
         env = {**os.environ, 'DATABASE_URL': f'file:{directory}/test.db',
-               'DATABASE_ENVIRONMENT': 'development', 'STUDIO_PASSWORD': password,
+               'DATABASE_ENVIRONMENT': 'development', 'RESEND_API_KEY': 're_test_local_only', 'LARKOVART_TEST_EMAIL_CAPTURE': str(Path(directory)/'email.json'), 'NODE_OPTIONS': '--import='+str(ROOT/'tests/helpers/resend-fetch.mjs'),
                'PAYMENT_PROVIDER':'recurrente', 'PAYMENT_ENVIRONMENT':'sandbox',
                'RECURRENTE_SECRET_KEY':'', 'RECURRENTE_SANDBOX_ID':'',
                'RECURRENTE_WEBHOOK_SECRET':'', 'DHL_TEST_USERNAME':'',
@@ -38,8 +36,10 @@ def run():
                     errors=[]
                     page.on('pageerror',lambda e:errors.append(str(e)))
                     page.goto(BASE+'/studio',wait_until='networkidle')
-                    page.get_by_label('Studio password').fill(password)
-                    page.get_by_role('button',name='Enter studio').click()
+                    page.get_by_role('button', name='Send sign-in code').click()
+                    expect(page.get_by_label('Email sign-in code')).to_be_visible()
+                    page.get_by_label('Email sign-in code').fill(__import__('json').loads((Path(directory)/'email.json').read_text())['code'])
+                    page.get_by_role('button',name='Verify code').click()
                     expect(page.get_by_role('heading',name='Good things are taking shape.')).to_be_visible()
                     expect(page.get_by_text('Forza · Guatemala:', exact=False)).to_be_visible()
                     expect(page.get_by_text('FedEx · international:', exact=False)).to_be_visible()
@@ -50,7 +50,7 @@ def run():
                     for name,value in {'parcelLength':'60','parcelWidth':'60','parcelHeight':'10','parcelWeight':'3','netWeight':'2','originCountry':'GT','hsCode':'970191','shippingBudget':'100'}.items():
                         work.locator(f'[name="{name}"]').fill(value)
                     work.get_by_role('button',name='Save changes').click()
-                    expect(page.get_by_text('Saved to the development catalog.')).to_be_visible()
+                    expect(page.get_by_text('Artwork saved. Published works are now visible in the gallery.')).to_be_visible()
                     page.goto(BASE+'/en/checkout/atitlan',wait_until='networkidle')
                     def fill():
                         page.get_by_label('Full name').fill('Test Collector')
