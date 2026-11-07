@@ -149,7 +149,7 @@ if (process.env.ENVIA_TEST_ORIGIN_JSON && process.env.ENVIA_SANDBOX_TOKEN) {
   }
 }
 
-if (process.env.RECURRENTE_SECRET_KEY || process.env.RECURRENTE_SANDBOX_ID) {
+if (process.env.RECURRENTE_SECRET_KEY || process.env.PAYMENT_PROVIDER === "recurrente") {
   const key = process.env.RECURRENTE_SECRET_KEY || "",
     sandbox = process.env.RECURRENTE_SANDBOX_ID || "";
   if (!key.startsWith("sk_test_") || (sandbox && !sandbox.startsWith("sbx_")))
