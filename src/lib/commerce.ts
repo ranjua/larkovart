@@ -47,7 +47,15 @@ export function buyerContact(input: OrderInput): ShippingContact {
 export function hashToken(value: string) {
   return createHash("sha256").update(value).digest("hex");
 }
+let writeQueue: Promise<void> = Promise.resolve();
 async function write<T>(fn: (tx: Transaction) => Promise<T>): Promise<T> {
+  const previous = writeQueue;
+  let release!: () => void;
+  writeQueue = new Promise<void>(resolve => { release = resolve; });
+  await previous;
+  try { return await writeTransaction(fn); } finally { release(); }
+}
+async function writeTransaction<T>(fn: (tx: Transaction) => Promise<T>): Promise<T> {
   for (let attempt = 0; attempt < 6; attempt++) {
     let tx: Transaction | undefined;
     try {
