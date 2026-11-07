@@ -10,21 +10,24 @@
     "build": "next build",
     "start": "next start --hostname 127.0.0.1",
     "typecheck": "tsc --noEmit",
-    "test": "node --experimental-strip-types --test tests/store.test.ts"
+    "test": "node --experimental-strip-types --test tests/*.test.ts",
+    "integrations:check": "node --env-file-if-exists=.env.local scripts/check-integrations.mjs",
+    "integrations:register-webhook": "node --env-file-if-exists=.env.local scripts/register-sandbox-webhook.mjs"
   },
   "dependencies": {
+    "@libsql/client": "latest",
+    "lucide-react": "latest",
     "next": "latest",
     "react": "latest",
     "react-dom": "latest",
-    "lucide-react": "latest",
-    "@libsql/client": "latest",
+    "svix": "^2.9.1",
     "zod": "latest"
   },
   "devDependencies": {
-    "typescript": "latest",
     "@types/node": "latest",
     "@types/react": "latest",
-    "@types/react-dom": "latest"
+    "@types/react-dom": "latest",
+    "typescript": "latest"
   },
   "type": "module"
 }

@@ -53,7 +53,8 @@ export function sameOrigin(request: Request) {
   expected.host = request.headers.get("host") || expected.host;
   if (process.env.VERCEL) {
     const protocol = request.headers.get("x-forwarded-proto");
-    if (protocol === "https" || protocol === "http") expected.protocol = protocol;
+    if (protocol === "https" || protocol === "http")
+      expected.protocol = protocol;
   }
   return !!origin && origin === expected.origin;
 }

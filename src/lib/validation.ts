@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { locales } from "./i18n.ts";
+import { parcelSchema } from "./integrations/dhl.ts";
 export const imageSchema = z
   .string()
   .max(5_600_000)
@@ -19,7 +20,8 @@ export const artworkSchema = z.object({
   height: z.number().positive().max(80),
   year: z.number().int().min(1900).max(new Date().getFullYear()),
   price: z.number().int().min(7500).max(100000),
-  status: z.enum(["available", "sold"]),
+  status: z.enum(["available", "reserved", "sold"]),
+  parcel: parcelSchema.optional(),
   published: z.boolean(),
   descriptions: z.record(z.enum(locales), z.string().trim().min(1).max(2000)),
 });

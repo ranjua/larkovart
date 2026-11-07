@@ -31,6 +31,9 @@ export async function init() {
         [
           "CREATE TABLE IF NOT EXISTS artworks (id TEXT PRIMARY KEY, data TEXT NOT NULL, status TEXT NOT NULL, published INTEGER NOT NULL)",
           "CREATE TABLE IF NOT EXISTS orders (id TEXT PRIMARY KEY, artwork_id TEXT NOT NULL, data TEXT NOT NULL, status TEXT NOT NULL, created_at TEXT NOT NULL)",
+          "CREATE TABLE IF NOT EXISTS payment_sessions (order_id TEXT PRIMARY KEY, checkout_id TEXT UNIQUE, token_hash TEXT NOT NULL, checkout_url TEXT, expires_at TEXT NOT NULL)",
+          "CREATE TABLE IF NOT EXISTS fulfillment (order_id TEXT PRIMARY KEY, state TEXT NOT NULL, data TEXT NOT NULL DEFAULT '{}')",
+          "CREATE TABLE IF NOT EXISTS webhook_inbox (id TEXT PRIMARY KEY, state TEXT NOT NULL, received_at TEXT NOT NULL)",
           ...seedArtworks.map((a) => ({
             sql: "INSERT OR IGNORE INTO artworks VALUES (?, ?, ?, ?)",
             args: [a.id, JSON.stringify(a), a.status, a.published ? 1 : 0],
@@ -68,6 +71,8 @@ export type OrderInput = {
   address: string;
   city: string;
   postal: string;
+  phone?: string;
+  region?: string;
 };
 export class StoreError extends Error {
   status: number;
@@ -80,10 +85,10 @@ export class StoreError extends Error {
 export function needsQuote(country: string) {
   return country !== "GT";
 }
-export async function order(input: OrderInput) {
+export async function order(input: OrderInput, quoteOnly = false) {
   for (let attempt = 0; attempt < 6; attempt++) {
     try {
-      return await createOrder(input);
+      return await createOrder(input, quoteOnly);
     } catch (e) {
       if (!(e instanceof Error) || !("code" in e) || e.code !== "SQLITE_BUSY")
         throw e;
@@ -93,7 +98,7 @@ export async function order(input: OrderInput) {
   }
   throw new StoreError("busy", 503);
 }
-async function createOrder(input: OrderInput) {
+async function createOrder(input: OrderInput, quoteOnly = false) {
   await init();
   const id = randomUUID();
   const tx = await db().transaction("write");
@@ -106,7 +111,8 @@ async function createOrder(input: OrderInput) {
     if (!row) throw new StoreError("not_found", 404);
     if (row.status !== "available") throw new StoreError("unavailable", 409);
     const a: Artwork = JSON.parse(String(row.data));
-    const status = needsQuote(input.country) ? "quote_requested" : "demo_paid";
+    const status =
+      quoteOnly || needsQuote(input.country) ? "quote_requested" : "demo_paid";
     // A write transaction serializes concurrent purchases of one original.
     if (status === "demo_paid")
       await tx.execute({
@@ -138,13 +144,19 @@ async function createOrder(input: OrderInput) {
 export async function studioOrders() {
   await init();
   const r = await db().execute(
-    "SELECT * FROM orders ORDER BY created_at DESC LIMIT 100",
+    "SELECT o.*, f.state AS fulfillment_state, f.data AS fulfillment_data FROM orders o LEFT JOIN fulfillment f ON f.order_id=o.id ORDER BY o.created_at DESC LIMIT 100",
   );
   return r.rows.map((row) => ({
     ...JSON.parse(String(row.data)),
     id: String(row.id),
     status: String(row.status),
     createdAt: String(row.created_at),
+    fulfillmentState: row.fulfillment_state
+      ? String(row.fulfillment_state)
+      : undefined,
+    tracking: row.fulfillment_data
+      ? JSON.parse(String(row.fulfillment_data)).shipmentTrackingNumber
+      : undefined,
   }));
 }
 export async function saveArtwork(a: Artwork) {

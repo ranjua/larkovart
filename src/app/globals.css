@@ -1496,3 +1496,40 @@ textarea {
     animation: none !important;
   }
 }
+
+.integration-panel {
+  margin: 35px 0;
+  padding: 25px;
+  border: 1px solid var(--line);
+  background: #eeece4;
+}
+.integration-panel h2 {
+  margin-top: 0;
+}
+.integration-panel .button {
+  margin-top: 18px;
+}
+.packing-details {
+  margin-top: 18px;
+  border-top: 1px solid var(--line);
+  padding-top: 12px;
+}
+.packing-details summary {
+  cursor: pointer;
+  font-size: 11px;
+}
+.shipping-actions {
+  flex-basis: 100%;
+}
+.shipping-actions .button {
+  font-size: 11px;
+  padding: 10px 14px;
+}
+.shipping-actions .text-link {
+  margin-right: 20px;
+  background: none;
+  cursor: pointer;
+}
+.studio-order {
+  flex-wrap: wrap;
+}

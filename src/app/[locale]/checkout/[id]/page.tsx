@@ -4,6 +4,7 @@ import { ArrowLeft } from "lucide-react";
 import { dictionaries, isLocale } from "@/lib/i18n";
 import { artwork } from "@/lib/store";
 import { Checkout } from "@/components/checkout";
+import { localizedCountries } from "@/lib/countries";
 export const dynamic = "force-dynamic";
 export default async function CheckoutPage({
   params,
@@ -22,7 +23,12 @@ export default async function CheckoutPage({
         {t.back}
       </Link>
       {a.status === "available" ? (
-        <Checkout art={a} locale={locale} />
+        <Checkout
+          art={a}
+          locale={locale}
+          sandbox={process.env.PAYMENT_PROVIDER === "recurrente"}
+          countryOptions={localizedCountries(locale)}
+        />
       ) : (
         <div className="empty-state">
           <h1>{t.unavailable}</h1>

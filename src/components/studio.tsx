@@ -3,6 +3,7 @@ import { useState, type FormEvent } from "react";
 import { useRouter } from "next/navigation";
 import type { Artwork } from "@/lib/catalog";
 import { locales, languageNames, type Locale } from "@/lib/i18n";
+import { ShippingActions } from "./integration-panel";
 type StudioOrder = {
   id: string;
   title: string;
@@ -11,6 +12,8 @@ type StudioOrder = {
   name: string;
   country: string;
   price: number;
+  fulfillmentState?: string;
+  tracking?: string;
 };
 export function Studio({
   works,
@@ -193,7 +196,7 @@ export function Studio({
         </div>
         <div>
           <strong>Payments & delivery</strong>
-          <span>Demo only · providers not connected</span>
+          <span>See sandbox connection status above</span>
         </div>
         <div>
           <strong>AI listing drafts</strong>
@@ -222,6 +225,23 @@ export function Studio({
                 ...a,
                 price: Math.round(Number(d.get("price")) * 100),
                 published: d.get("published") === "on",
+                parcel:
+                  Number(d.get("parcelLength")) > 0
+                    ? {
+                        length: Number(d.get("parcelLength")),
+                        width: Number(d.get("parcelWidth")),
+                        height: Number(d.get("parcelHeight")),
+                        weight: Number(d.get("parcelWeight")),
+                        netWeight: Number(d.get("netWeight")),
+                        originCountry: String(
+                          d.get("originCountry"),
+                        ).toUpperCase(),
+                        hsCode: String(d.get("hsCode")),
+                        shippingBudget: Math.round(
+                          Number(d.get("shippingBudget")) * 100,
+                        ),
+                      }
+                    : undefined,
               });
             }}
           >
@@ -242,6 +262,102 @@ export function Studio({
                 required
               />
             </label>
+            <details className="packing-details">
+              <summary>Packed dimensions & shipping allowance</summary>
+              <p className="fine-print">
+                Use measured package sizes, not canvas sizes. Leave length blank
+                to require a manual quote.
+              </p>
+              <div className="form-row">
+                <label>
+                  Length · cm
+                  <input
+                    name="parcelLength"
+                    type="number"
+                    min="0.1"
+                    max="150"
+                    step="0.1"
+                    defaultValue={a.parcel?.length}
+                  />
+                </label>
+                <label>
+                  Width · cm
+                  <input
+                    name="parcelWidth"
+                    type="number"
+                    min="0.1"
+                    max="150"
+                    step="0.1"
+                    defaultValue={a.parcel?.width}
+                  />
+                </label>
+              </div>
+              <div className="form-row">
+                <label>
+                  Depth · cm
+                  <input
+                    name="parcelHeight"
+                    type="number"
+                    min="0.1"
+                    max="150"
+                    step="0.1"
+                    defaultValue={a.parcel?.height}
+                  />
+                </label>
+                <label>
+                  Packed weight · kg
+                  <input
+                    name="parcelWeight"
+                    type="number"
+                    min="0.01"
+                    max="70"
+                    step="0.01"
+                    defaultValue={a.parcel?.weight}
+                  />
+                </label>
+              </div>
+              <label>
+                Artwork net weight · kg
+                <input
+                  name="netWeight"
+                  type="number"
+                  min="0.01"
+                  max="70"
+                  step="0.01"
+                  defaultValue={a.parcel?.netWeight}
+                />
+              </label>
+              <label>
+                Origin country · two-letter code
+                <input
+                  name="originCountry"
+                  minLength={2}
+                  maxLength={2}
+                  defaultValue={a.parcel?.originCountry}
+                />
+              </label>
+              <label>
+                Approved customs HS code
+                <input
+                  name="hsCode"
+                  pattern="[0-9]{6,10}"
+                  defaultValue={a.parcel?.hsCode}
+                />
+              </label>
+              <label>
+                Included shipping allowance · USD
+                <input
+                  name="shippingBudget"
+                  type="number"
+                  min="0"
+                  max="1000"
+                  step="0.01"
+                  defaultValue={
+                    a.parcel ? a.parcel.shippingBudget / 100 : undefined
+                  }
+                />
+              </label>
+            </details>
             <label style={{ display: "flex", alignItems: "center", gap: 8 }}>
               <input
                 type="checkbox"
@@ -274,9 +390,18 @@ export function Studio({
             <span>
               {o.status === "demo_paid"
                 ? "Test payment · not shipped"
-                : "Quote requested · not paid"}
+                : o.status === "quote_requested"
+                  ? "Quote requested · not paid"
+                  : o.status.replaceAll("_", " ")}
             </span>
             <p>${o.price / 100} USD</p>
+            {o.status === "sandbox_paid" && (
+              <ShippingActions
+                id={o.id}
+                state={o.fulfillmentState}
+                tracking={o.tracking}
+              />
+            )}
           </div>
         ))
       )}

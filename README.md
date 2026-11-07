@@ -34,7 +34,7 @@ ignored `.env.local` containing a generated password.
 - Persistent local SQLite/libSQL catalog and orders in ignored `.data/`.
 - Transactional one-of-a-kind purchasing with contention retries; one successful
   test purchase makes the original unavailable to all other buyers.
-- Guatemala test orders simulate payment. Other destinations save quote requests,
+- In default demo mode, Guatemala orders simulate payment. Other destinations save quote requests,
   without consuming inventory or collecting payment. Guatemala delivery is a
   demonstration rule, not a verified carrier quote.
 - Private studio for photo uploads, six-language descriptions, unpublished
@@ -53,33 +53,25 @@ Uploaded draft photographs are stored as data URLs in the development database
 (4 MB maximum). This keeps development self-contained. Move uploads to private
 object storage, with published derivatives, before a real store launch.
 
-## Not connected yet
+## Payment and courier integration status
 
-This is a reviewable development foundation, **not a live automated business**.
-No real payments, bank transfers, PayPal payouts, cryptocurrency transfers,
-shipping labels, courier bookings, customer emails, or domain changes occur.
+Recurrente Sandbox checkout and DHL Express test ratings, labels, pickup and
+tracking are implemented. The order flow includes checkout inventory holds,
+server-side amount verification, signed webhooks, durable replay protection,
+expiry reconciliation and idempotent fulfillment jobs. The studio supports
+packing data and test label downloads. A 249-country selector is checked against
+actual courier availability and an artist-configured shipping allowance.
 
-Before accepting real orders:
+**The provider accounts and Vercel are not connected yet.** No provider credentials
+were available during implementation. Integration tests use injected transports,
+not real provider accounts. No real payment, bank payout, courier collection,
+customer email, image enhancement or domain change has occurred.
 
-1. Confirm artwork prices, packed dimensions, weights, depth for sculptures,
-   materials, availability and original photographs. Obtain accurate images; AI
-   must not change the physical artwork being represented.
-2. Verify a Guatemala-compatible payment provider. Recurrente is the first
-   candidate, pending account eligibility, international card acceptance, artwork
-   sale limits and bank payout verification. Implement and verify its isolated
-   sandbox checkout and signed webhooks before adding live execution. Demo
-   payment success must never be reused as proof of a real payment.
-3. Confirm collection service from Zona 12, Guatemala City, carrier API access,
-   packaging rules, damage coverage, destination restrictions and real rates.
-   Agree where shipping fits inside the $75–$1,000 sale price. Do not promise
-   worldwide shipping at a fixed included price.
-4. Implement payment reservations and expiration, idempotent verified payment
-   events, refunds, courier jobs and retries, notifications, and order tracking.
-   Connect email and add alerts for failed or exceptional orders.
-5. Add an image editing provider and a review step for cleaned product photos and
-   labeled generated room scenes. The current room view does not use image AI.
-6. Confirm store policies, invoicing, customs handling, and buyer-facing contact
-   information. Add a mature authentication/rate-limiting setup before public use.
+Follow [the integration setup guide](docs/INTEGRATIONS.md) to configure isolated
+Sandbox/test accounts, a development cloud database and a Vercel Preview. Run
+`npm run integrations:check` to see missing configuration names without exposing
+secrets. AI image editing, refund/dispute handling, real payouts and live courier
+operations remain outside this development version.
 
 ## Vercel development preview
 
@@ -112,6 +104,11 @@ Store tests create and remove a dedicated temporary development database. They
 cover concurrent buyers, international quotes, sold inventory, draft visibility,
 and server-controlled pricing.
 
+Integration tests also cover sandbox-only credentials, checkout holds, signed
+webhooks and replay handling, verified amounts, expiry, and duplicate-shipment
+prevention. Provider transports are fixtures; actual account verification remains
+pending sandbox credentials.
+
 Browser tests are in `tests/browser.py`; they start an isolated local Next.js
 server and use only temporary test data:
 
@@ -121,6 +118,7 @@ python3 -m venv .venv
 .venv/bin/python -m playwright install chromium
 npm run build
 .venv/bin/python tests/browser.py
+.venv/bin/python tests/sandbox_browser.py
 ```
 
 ## Repository layout

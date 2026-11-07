@@ -5,10 +5,24 @@ import Image from "next/image";
 import { ArrowUpRight, Check, Package } from "lucide-react";
 import { dictionaries, money, type Locale } from "@/lib/i18n";
 import type { Artwork } from "@/lib/catalog";
-export function Checkout({ art, locale }: { art: Artwork; locale: Locale }) {
+import type { CountryOption } from "@/lib/countries";
+import { paymentCopy } from "@/lib/payment-copy";
+export function Checkout({
+  art,
+  locale,
+  sandbox = false,
+  countryOptions,
+}: {
+  art: Artwork;
+  locale: Locale;
+  sandbox?: boolean;
+  countryOptions: CountryOption[];
+}) {
   const t = dictionaries[locale];
+  const p = paymentCopy[locale];
   const [country, setCountry] = useState("GT");
   const [busy, setBusy] = useState(false);
+  const [quoteNeeded, setQuoteNeeded] = useState(sandbox && !art.parcel);
   const [error, setError] = useState("");
   const [result, setResult] = useState<{ id: string; status: string } | null>(
     null,
@@ -19,16 +33,32 @@ export function Checkout({ art, locale }: { art: Artwork; locale: Locale }) {
     setError("");
     const data = Object.fromEntries(new FormData(e.currentTarget));
     try {
-      const response = await fetch("/api/orders", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ...data, artworkId: art.id }),
-      });
+      const response = await fetch(
+        sandbox && quoteNeeded
+          ? "/api/quotes"
+          : sandbox
+            ? "/api/checkout/sandbox"
+            : "/api/orders",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ ...data, artworkId: art.id, locale }),
+        },
+      );
       if (!response.ok) {
-        setError(response.status === 409 ? t.conflict : t.error);
+        if (sandbox && response.status === 422) setQuoteNeeded(true);
+        setError(
+          response.status === 409
+            ? t.conflict
+            : sandbox && response.status === 422
+              ? p.setup
+              : t.error,
+        );
         return;
       }
-      setResult(await response.json());
+      const result = await response.json();
+      if (sandbox && !quoteNeeded) window.location.assign(result.checkoutUrl);
+      else setResult(result);
     } catch {
       setError(t.error);
     } finally {
@@ -59,7 +89,7 @@ export function Checkout({ art, locale }: { art: Artwork; locale: Locale }) {
       <div>
         <p className="eyebrow">{t.edition}</p>
         <h1>{t.checkout}</h1>
-        <p className="checkout-intro">{t.checkoutIntro}</p>
+        <p className="checkout-intro">{sandbox ? p.intro : t.checkoutIntro}</p>
         <form onSubmit={submit} className="checkout-form">
           <div className="form-row">
             <label>
@@ -68,7 +98,7 @@ export function Checkout({ art, locale }: { art: Artwork; locale: Locale }) {
                 name="name"
                 required
                 minLength={2}
-                maxLength={120}
+                maxLength={sandbox ? 45 : 120}
                 autoComplete="off"
                 placeholder="Alex Demo"
               />
@@ -90,31 +120,59 @@ export function Checkout({ art, locale }: { art: Artwork; locale: Locale }) {
             <select
               name="country"
               value={country}
-              onChange={(e) => setCountry(e.target.value)}
+              onChange={(e) => {
+                setCountry(e.target.value);
+                setQuoteNeeded(sandbox && !art.parcel);
+              }}
             >
-              <option value="GT">{t.guatemala}</option>
-              <option value="US">{t.us}</option>
-              <option value="OTHER">{t.other}</option>
+              {countryOptions.map((c) => (
+                <option key={c.code} value={c.code}>
+                  {c.name}
+                </option>
+              ))}
             </select>
           </label>
+          {sandbox && (
+            <div className="form-row">
+              <label>
+                {p.phone}
+                <input
+                  name="phone"
+                  type="tel"
+                  required
+                  minLength={7}
+                  maxLength={25}
+                />
+              </label>
+              <label>
+                {p.region}
+                <input name="region" maxLength={35} />
+              </label>
+            </div>
+          )}
           <label>
             {t.address}
             <input
               name="address"
               required
               minLength={3}
-              maxLength={240}
+              maxLength={sandbox ? 45 : 240}
               autoComplete="off"
             />
           </label>
           <div className="form-row">
             <label>
               {t.city}
-              <input name="city" required minLength={2} maxLength={100} />
+              <input
+                name="city"
+                required
+                minLength={2}
+                maxLength={sandbox ? 45 : 100}
+              />
             </label>
             <label>
               {t.postal}
-              <input name="postal" required maxLength={20} />
+              <input name="postal" required maxLength={sandbox ? 12 : 20} />
             </label>
           </div>
           <p className="fine-print">{t.privacy}</p>
@@ -124,7 +182,15 @@ export function Checkout({ art, locale }: { art: Artwork; locale: Locale }) {
             </p>
           )}
           <button className="button button-dark full-width" disabled={busy}>
-            {busy ? t.working : country === "GT" ? t.demoPay : t.requestQuote}
+            {busy
+              ? t.working
+              : sandbox
+                ? quoteNeeded
+                  ? t.requestQuote
+                  : p.pay
+                : country === "GT"
+                  ? t.demoPay
+                  : t.requestQuote}
             <ArrowUpRight size={18} />
           </button>
         </form>
@@ -147,8 +213,20 @@ export function Checkout({ art, locale }: { art: Artwork; locale: Locale }) {
         <div className="shipping-note">
           <Package size={20} />
           <div>
-            <strong>{country === "GT" ? t.deliveryIncluded : t.quote}</strong>
-            <p>{country === "GT" ? t.development : t.quoteNote}</p>
+            <strong>
+              {sandbox
+                ? p.note
+                : country === "GT"
+                  ? t.deliveryIncluded
+                  : t.quote}
+            </strong>
+            <p>
+              {sandbox
+                ? p.setup
+                : country === "GT"
+                  ? t.development
+                  : t.quoteNote}
+            </p>
           </div>
         </div>
       </aside>

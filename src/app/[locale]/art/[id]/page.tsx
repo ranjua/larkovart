@@ -76,7 +76,9 @@ export default async function ArtPage({
               </Link>
             </>
           ) : (
-            <p className="sold-note">{t.unavailable}</p>
+            <p className="sold-note">
+              {a.status === "reserved" ? t.reserved : t.unavailable}
+            </p>
           )}
           <p className="fine-print">{t.development}</p>
         </div>

@@ -78,7 +78,7 @@ def run():
                     page.goto(BASE+'/studio',wait_until='networkidle')
                     page.get_by_label('Studio password').fill(password)
                     page.get_by_role('button',name='Enter studio').click()
-                    expect(page.get_by_text('Good things are taking shape.')).to_be_visible()
+                    expect(page.get_by_role('heading',name='Good things are taking shape.')).to_be_visible()
                     # A test quote is recorded and leaves the original available.
                     page.goto(BASE+'/en/checkout/mar',wait_until='networkidle')
                     page.get_by_label('Full name').fill('Test Collector')

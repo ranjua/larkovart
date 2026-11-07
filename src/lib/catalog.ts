@@ -10,7 +10,8 @@ export type Artwork = {
   height: number;
   year: number;
   price: number;
-  status: "available" | "sold";
+  status: "available" | "reserved" | "sold";
+  parcel?: import("./integrations/dhl.ts").Parcel;
   published: boolean;
   descriptions: Record<Locale, string>;
 };

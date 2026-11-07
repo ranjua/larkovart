@@ -1,20 +1,13 @@
-import { z } from "zod";
+import { buyerSchema } from "@/lib/buyer";
 import { order, StoreError } from "@/lib/store";
 import { sameOrigin } from "@/lib/auth";
-const input = z.object({
-  artworkId: z.string().min(1).max(80),
-  name: z.string().trim().min(2).max(120),
-  email: z.email().max(180),
-  country: z.enum(["GT", "US", "OTHER"]),
-  address: z.string().trim().min(3).max(240),
-  city: z.string().trim().min(2).max(100),
-  postal: z.string().trim().min(1).max(20),
-});
 export async function POST(request: Request) {
+  if (process.env.PAYMENT_PROVIDER && process.env.PAYMENT_PROVIDER !== "demo")
+    return Response.json({ error: "demo_checkout_disabled" }, { status: 403 });
   if (!sameOrigin(request))
     return Response.json({ error: "invalid_origin" }, { status: 403 });
   try {
-    const parsed = input.safeParse(await request.json());
+    const parsed = buyerSchema.safeParse(await request.json());
     if (!parsed.success)
       return Response.json({ error: "invalid_input" }, { status: 400 });
     return Response.json(await order(parsed.data), {

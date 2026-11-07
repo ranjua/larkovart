@@ -82,3 +82,8 @@ test("prices are taken from the catalog rather than the submitted order", async 
   } as Parameters<typeof store.order>[0]);
   assert.equal(result.price, 27500);
 });
+test("a local quote request never simulates payment or consumes the original", async () => {
+  const result = await store.order({ ...buyer, artworkId: "mar" }, true);
+  assert.equal(result.status, "quote_requested");
+  assert.equal((await store.artwork("mar"))?.status, "available");
+});
