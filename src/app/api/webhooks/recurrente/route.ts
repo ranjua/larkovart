@@ -1,9 +1,13 @@
+import { db } from "@/lib/store";
+import { reconcileProbeWebhook } from "@/lib/recurrente-probe-webhook";
+import { recurrenteWebhookSecret } from "@/lib/integrations/webhook-settings";
 import { verifyRecurrenteWebhook } from "@/lib/integrations/webhook";
 import { receiveWebhook } from "@/lib/commerce";
 export async function POST(request: Request) {
+  const secret = await recurrenteWebhookSecret();
   if (
     process.env.PAYMENT_ENVIRONMENT !== "sandbox" ||
-    !process.env.RECURRENTE_WEBHOOK_SECRET ||
+    !secret ||
     !process.env.RECURRENTE_SANDBOX_ID
   )
     return Response.json(
@@ -18,7 +22,7 @@ export async function POST(request: Request) {
     event = verifyRecurrenteWebhook(
       raw,
       request.headers,
-      process.env.RECURRENTE_WEBHOOK_SECRET,
+      secret,
       process.env.RECURRENTE_SANDBOX_ID,
     );
   } catch {
@@ -29,7 +33,17 @@ export async function POST(request: Request) {
   }
   try {
     // Reconcile from the provider, not from untrusted success redirects or amounts.
-    if (event.checkoutId) await receiveWebhook(event.id, event.checkoutId);
+    if (event.checkoutId) {
+      await reconcileProbeWebhook(event.id, event.checkoutId);
+      await receiveWebhook(event.id, event.checkoutId);
+    }
+    await db().execute(
+      "CREATE TABLE IF NOT EXISTS recurrente_webhook_receipts(message_id TEXT PRIMARY KEY,event_type TEXT NOT NULL,received_at TEXT NOT NULL)",
+    );
+    await db().execute({
+      sql: "INSERT OR IGNORE INTO recurrente_webhook_receipts VALUES(?,?,?)",
+      args: [event.id, event.type || "unknown", new Date().toISOString()],
+    });
     return Response.json({ received: true });
   } catch {
     return Response.json({ error: "retry_delivery" }, { status: 503 });

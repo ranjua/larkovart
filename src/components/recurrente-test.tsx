@@ -1,6 +1,7 @@
 "use client";
 import { useState } from "react";
 export function RecurrenteTest({ configured }: { configured: boolean }) {
+  const [webhook, setWebhook] = useState(false);
   const [id, setId] = useState("");
   const [state, setState] = useState("");
   const [url, setUrl] = useState("");
@@ -20,6 +21,7 @@ export function RecurrenteTest({ configured }: { configured: boolean }) {
       const j = await r.json();
       if (!r.ok) throw Error();
       setState(j.test.state);
+      setWebhook(j.signedWebhookReceived === true);
       setUrl(j.test.checkout_url || "");
     } catch {
       setMessage(
@@ -75,7 +77,12 @@ export function RecurrenteTest({ configured }: { configured: boolean }) {
         Test card: 4242 4242 4242 4242 · any future expiry · any 3-digit CVC.
         Never enter a real card here.
       </p>
-      {state && <p role="status">Test status: {state}</p>}
+      {state && (
+        <p role="status">
+          Test status: {state} · Signed webhook:{" "}
+          {webhook ? "received and verified" : "not yet received"}
+        </p>
+      )}
       {message && <p role="alert">{message}</p>}
     </section>
   );

@@ -104,12 +104,20 @@ export async function POST(request: Request) {
         args: ["refund_" + refund.status, id],
       });
     }
+    await db().execute(
+      "CREATE TABLE IF NOT EXISTS recurrente_probe_events(message_id TEXT PRIMARY KEY,probe_id TEXT NOT NULL)",
+    );
+    const received = await db().execute({
+      sql: "SELECT message_id FROM recurrente_probe_events WHERE probe_id=? LIMIT 1",
+      args: [id],
+    });
     const current = await db().execute({
       sql: "SELECT id,state,checkout_url FROM recurrente_probes WHERE id=?",
       args: [id],
     });
     return Response.json({
       test: current.rows[0],
+      signedWebhookReceived: received.rows.length > 0,
       sandbox: true,
       amount: "USD 1.00",
       inventoryChanged: false,
