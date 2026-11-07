@@ -35,6 +35,25 @@ export function ArtViewer({ art, locale }: { art: Artwork; locale: Locale }) {
           {t.room}
         </button>
       </div>
+      {art.originalImage && (
+        <a
+          className="fine-print"
+          href={art.originalImage}
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          {
+            {
+              es: "Ver foto original sin retoques",
+              en: "View original, unedited photo",
+              ru: "Исходная фотография без обработки",
+              zh: "查看未经处理的原始照片",
+              ja: "未加工の元写真を見る",
+              pt: "Ver foto original sem edição",
+            }[locale]
+          }
+        </a>
+      )}
       {room && <p className="fine-print">{t.roomNote}</p>}
     </div>
   );

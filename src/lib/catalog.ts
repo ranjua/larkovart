@@ -5,6 +5,7 @@ export type Artwork = {
   title: string;
   category: Category;
   image: string;
+  originalImage?: string;
   medium: "oil" | "acrylic" | "mixed" | "charcoal" | "bronze" | "other";
   width: number;
   height: number;

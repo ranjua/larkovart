@@ -6,6 +6,7 @@ import { Studio } from "@/components/studio";
 import { IntegrationPanel } from "@/components/integration-panel";
 import { recurrenteConfigured } from "@/lib/integrations/recurrente";
 import { shippingStatus } from "@/lib/shipping";
+import { photoConfigured } from "@/lib/photo";
 export const dynamic = "force-dynamic";
 export default async function StudioPage() {
   const authorized = await session();
@@ -40,6 +41,7 @@ export default async function StudioPage() {
         <Studio
           works={await artworks(true)}
           orders={await studioOrders()}
+          photoConnected={photoConfigured()}
           aiConnected={
             !!process.env.OPENAI_API_KEY && !!process.env.OPENAI_TEXT_MODEL
           }

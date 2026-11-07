@@ -1,5 +1,15 @@
 # Current status — 2026-11-07
 
+## Photo enhancement and publishing
+
+Private `/studio` now includes simplified photo upload, USD 100 default price,
+automatic factual descriptions in six languages and publishing checked by default.
+Cloudinary signed direct uploads, AI exposure/color enhancement, original-photo
+preservation and provider receipt verification are implemented. No Cloudinary
+environment variables are configured yet: real enhancement remains unverified
+until the owner connects the free account. Original uploads remain available with
+an explicit disconnected status. Setup/cost details: `docs/PHOTO-ENHANCEMENT.md`.
+
 ## Delivery: paused at owner's request
 
 Do not continue delivery configuration or request further delivery setup until the owner resumes it. Preserve all existing credentials and configuration.
