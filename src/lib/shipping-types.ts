@@ -1,5 +1,5 @@
 import type { Parcel, ShippingContact } from "./integrations/dhl.ts";
-export type CourierId = "forza" | "guatex" | "dhl" | "fedex";
+export type CourierId = "forza" | "guatex" | "dhl" | "fedex" | "envia";
 export type ShippingQuote = {
   carrier: CourierId;
   service: string;

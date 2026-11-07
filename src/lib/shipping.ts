@@ -1,3 +1,4 @@
+import { envia, enviaConfigured } from "./integrations/envia.ts";
 import { dhl, dhlConfigured } from "./integrations/dhl.ts";
 import { forza, forzaConfigured } from "./integrations/forza.ts";
 import { fedex, fedexConfigured } from "./integrations/fedex.ts";
@@ -11,6 +12,11 @@ import type {
 
 export function shippingStatus() {
   return [
+    {
+      id: "envia",
+      name: "Envia · Guatemala & international",
+      configured: enviaConfigured(),
+    },
     { id: "forza", name: "Forza · Guatemala", configured: forzaConfigured() },
     {
       id: "dhl",
@@ -32,6 +38,7 @@ export function shippingStatus() {
 export const shippingConfigured = () =>
   shippingStatus().some((p) => p.configured);
 export function courierAdapter(id: CourierId): CourierAdapter {
+  if (id === "envia") return envia();
   if (id === "forza") return forza();
   if (id === "fedex") return fedex();
   if (id === "dhl") {
