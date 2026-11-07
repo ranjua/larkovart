@@ -21,7 +21,8 @@ def run():
                'RECURRENTE_SECRET_KEY':'', 'RECURRENTE_SANDBOX_ID':'',
                'RECURRENTE_WEBHOOK_SECRET':'', 'DHL_TEST_USERNAME':'',
                'DHL_TEST_PASSWORD':'', 'DHL_TEST_ACCOUNT':'', 'DHL_TEST_SHIPPER_JSON':'',
-               'DHL_AUTO_BOOK_TEST':'false','CRON_SECRET':'',
+               'SHIPPING_AUTO_BOOK_TEST':'false','SHIPPING_TEST_SHIPPER_JSON':'',
+               'FORZA_TEST_CODAPP':'','FEDEX_TEST_CLIENT_ID':'','CRON_SECRET':'',
                'OPENAI_API_KEY':'','OPENAI_TEXT_MODEL':''}
         with open(Path(directory)/'server.log','w+') as log:
             server = subprocess.Popen(['npm','run','start','--','--port','3300'],cwd=ROOT,env=env,stdout=log,stderr=log,start_new_session=True)
@@ -40,6 +41,10 @@ def run():
                     page.get_by_label('Studio password').fill(password)
                     page.get_by_role('button',name='Enter studio').click()
                     expect(page.get_by_role('heading',name='Good things are taking shape.')).to_be_visible()
+                    expect(page.get_by_text('Forza · Guatemala:', exact=False)).to_be_visible()
+                    expect(page.get_by_text('FedEx · international:', exact=False)).to_be_visible()
+                    expect(page.get_by_text('Guatex · awaiting API documentation:', exact=False)).to_be_visible()
+                    expect(page.get_by_role('button',name='Copy courier access request')).to_be_visible()
                     work=page.locator('.studio-work').first
                     work.locator('summary').click()
                     for name,value in {'parcelLength':'60','parcelWidth':'60','parcelHeight':'10','parcelWeight':'3','netWeight':'2','originCountry':'GT','hsCode':'970191','shippingBudget':'100'}.items():

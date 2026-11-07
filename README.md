@@ -5,6 +5,8 @@ designed for Vercel. The previous site is preserved byte-for-byte under `_old/`.
 No old HTML, JavaScript or CSS is imported. Only artwork photographs and artist
 information were carried forward.
 
+For the short account setup checklist, see [QUICK-SETUP.md](docs/QUICK-SETUP.md).
+
 ## Start locally
 
 Use Node.js 24:
@@ -55,8 +57,9 @@ object storage, with published derivatives, before a real store launch.
 
 ## Payment and courier integration status
 
-Recurrente Sandbox checkout and DHL Express test ratings, labels, pickup and
-tracking are implemented. The order flow includes checkout inventory holds,
+Recurrente Sandbox checkout and Forza, DHL Express and FedEx test connectors
+for ratings, labels, pickup and tracking are implemented. Guatex awaits verified
+API documentation and access. The order flow includes checkout inventory holds,
 server-side amount verification, signed webhooks, durable replay protection,
 expiry reconciliation and idempotent fulfillment jobs. The studio supports
 packing data and test label downloads. A 249-country selector is checked against

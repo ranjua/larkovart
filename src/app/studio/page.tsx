@@ -4,7 +4,7 @@ import { artworks, studioOrders } from "@/lib/store";
 import { Studio } from "@/components/studio";
 import { IntegrationPanel } from "@/components/integration-panel";
 import { recurrenteConfigured } from "@/lib/integrations/recurrente";
-import { dhlConfigured } from "@/lib/integrations/dhl";
+import { shippingStatus } from "@/lib/shipping";
 export const dynamic = "force-dynamic";
 export default async function StudioPage() {
   const authorized = await session();
@@ -16,8 +16,8 @@ export default async function StudioPage() {
       {authorized && (
         <IntegrationPanel
           payment={recurrenteConfigured()}
-          courier={dhlConfigured()}
-          autoBook={process.env.DHL_AUTO_BOOK_TEST === "true"}
+          couriers={shippingStatus()}
+          autoBook={process.env.SHIPPING_AUTO_BOOK_TEST !== "false"}
         />
       )}
       {authorized ? (
