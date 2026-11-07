@@ -1,3 +1,5 @@
+> Start with [the short setup checklist](QUICK-SETUP.md). Multi-courier test support now includes Forza (GT), DHL and FedEx (international); Guatex awaits its official API contract. Shared sender: `SHIPPING_TEST_SHIPPER_JSON`. Automatic test booking is enabled unless `SHIPPING_AUTO_BOOK_TEST=false`. This supersedes DHL-only configuration below. See `.env.example` for each courier’s test credentials.
+
 # Payment, courier and Vercel development setup
 
 The code now integrates **Recurrente Sandbox** and **DHL Express MyDHL test API**.
@@ -17,7 +19,7 @@ Live payment keys, live endpoints and production data are outside this task.
 4. A signed webhook or an authenticated buyer status check retrieves the checkout
    from Recurrente. Sandbox, order reference, currency and exact amount must match
    before inventory becomes sold. A success redirect alone does not prove payment.
-5. A durable fulfillment job is queued once. With `DHL_AUTO_BOOK_TEST=true`, it
+5. A durable fulfillment job is queued once. Unless `SHIPPING_AUTO_BOOK_TEST=false`, it
    rechecks shipping eligibility and requests a test label and pickup. Otherwise,
    the studio has a **Create test label & pickup** button.
 6. The studio can download the test PDF label and request DHL test tracking data.

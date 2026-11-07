@@ -3,11 +3,11 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 export function IntegrationPanel({
   payment,
-  courier,
+  couriers,
   autoBook,
 }: {
   payment: boolean;
-  courier: boolean;
+  couriers: { id: string; name: string; configured: boolean }[];
   autoBook: boolean;
 }) {
   const [message, setMessage] = useState("");
@@ -23,15 +23,84 @@ export function IntegrationPanel({
             ? "credentials configured; provider verification required"
             : "awaiting sandbox credentials"}
           <br />
-          DHL Express test API:{" "}
-          {courier
-            ? "credentials configured; checked when quoting"
-            : "awaiting test credentials and sender profile"}
-          <br />
+          {couriers.map((c) => (
+            <span key={c.id}>
+              {c.name}:{" "}
+              {c.configured
+                ? "test credentials configured; account verification pending"
+                : c.id === "guatex"
+                  ? "request API documentation and test access"
+                  : "awaiting test access"}
+              <br />
+            </span>
+          ))}
           Automatic test labels & pickup:{" "}
           {autoBook
             ? "enabled after verified payment"
             : "off; use the order’s test booking button"}
+        </p>
+      </div>
+      <div className="studio-note">
+        <p>
+          One-time setup: request test API access from each courier. Save
+          credentials privately in the preview environment.
+        </p>
+        <p>
+          <a
+            href="https://www.forzadelivery.com/gt/"
+            target="_blank"
+            rel="noreferrer"
+          >
+            Forza
+          </a>{" "}
+          ·{" "}
+          <a
+            href="https://guatex.com/contacto/"
+            target="_blank"
+            rel="noreferrer"
+          >
+            Guatex
+          </a>{" "}
+          ·{" "}
+          <a
+            href="https://developer.dhl.com/api-reference/dhl-express-mydhl-api"
+            target="_blank"
+            rel="noreferrer"
+          >
+            DHL
+          </a>{" "}
+          ·{" "}
+          <a
+            href="https://developer.fedex.com/"
+            target="_blank"
+            rel="noreferrer"
+          >
+            FedEx
+          </a>
+        </p>
+        <button
+          className="text-link"
+          onClick={async () => {
+            try {
+              await navigator.clipboard.writeText(
+                "Hola. Quiero integrar mi tienda de arte con origen en zona 12, Ciudad de Guatemala. Necesito documentación y acceso API de pruebas para cotizar, generar guías, solicitar recolecciones y rastrear envíos. ¿Pueden habilitarlo y confirmar cómo agrupar varias guías en una recolección diaria?",
+              );
+              setMessage(
+                "Courier access request copied. Send it to your courier representative.",
+              );
+            } catch {
+              setMessage(
+                "Request test API access for rates, labels, pickups and tracking from your courier representative.",
+              );
+            }
+          }}
+        >
+          Copy courier access request
+        </button>
+        <p>
+          Eligible test rates are compared automatically. Labels and pickup
+          requests follow verified sandbox payment. Guatex stays disabled until
+          its API is verified.
         </p>
       </div>
       <button
@@ -112,12 +181,12 @@ export function ShippingActions({
           Create test label & pickup
         </button>
       )}
-      {state === "test_booked" && (
+      {["test_booked", "test_label_created"].includes(state || "") && (
         <a className="text-link" href={`/api/studio/orders/${id}/shipping`}>
           Download test label ↗
         </a>
       )}
-      {state === "test_booked" && (
+      {["test_booked", "test_label_created"].includes(state || "") && (
         <button
           className="text-link"
           disabled={busy}
@@ -129,7 +198,7 @@ export function ShippingActions({
               });
               setMessage(
                 r.ok
-                  ? "Tracking response received from the DHL test API. Test tracking fixtures may differ from real delivery."
+                  ? "Tracking response received from the selected courier’s test API. Test tracking fixtures may differ from real delivery."
                   : "Tracking is not available in the test environment.",
               );
             } catch {
@@ -141,6 +210,12 @@ export function ShippingActions({
         >
           Check test tracking
         </button>
+      )}
+      {state === "test_label_created" && (
+        <p className="studio-note">
+          Test label saved. Pickup is unconfirmed; check with the courier before
+          scheduling another pickup. The label will not be recreated.
+        </p>
       )}
       {state === "review_required" && (
         <p className="studio-note">

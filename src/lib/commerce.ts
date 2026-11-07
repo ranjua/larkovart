@@ -11,16 +11,14 @@ import {
   recurrente,
   type RecurrenteSandbox,
 } from "./integrations/recurrente.ts";
-import {
-  dhl,
-  dhlConfigured,
-  type DhlSandbox,
-  type ShippingContact,
-} from "./integrations/dhl.ts";
+import { type ShippingContact } from "./integrations/dhl.ts";
+
+import { shipping, shippingConfigured } from "./shipping.ts";
+import type { CourierConnection } from "./shipping-types.ts";
 
 export type SandboxProviders = {
   payment: RecurrenteSandbox;
-  courier: DhlSandbox;
+  courier: CourierConnection;
 };
 type SavedOrder = OrderInput & {
   title: string;
@@ -76,7 +74,7 @@ async function write<T>(fn: (tx: Transaction) => Promise<T>): Promise<T> {
 export async function startSandboxCheckout(
   input: OrderInput,
   locale: string,
-  providers: SandboxProviders = { payment: recurrente(), courier: dhl() },
+  providers: SandboxProviders = { payment: recurrente(), courier: shipping() },
 ) {
   const a = await artwork(input.artworkId);
   if (!a || a.status !== "available") throw new StoreError("unavailable", 409);
@@ -222,16 +220,19 @@ export async function reconcilePayment(id: string, payment = recurrente()) {
   });
   return next;
 }
-export async function processFulfillment(id: string, courier?: DhlSandbox) {
+export async function processFulfillment(
+  id: string,
+  courier?: CourierConnection,
+) {
   const order = await orderState(id);
   if (order.status !== "sandbox_paid")
     throw new StoreError("verified_payment_required", 409);
   if (
     !courier &&
-    (!dhlConfigured() || process.env.DHL_AUTO_BOOK_TEST !== "true")
+    (!shippingConfigured() || process.env.SHIPPING_AUTO_BOOK_TEST === "false")
   )
     return "queued";
-  courier ||= dhl();
+  courier ||= shipping();
   // Atomic claim: ambiguous outcomes are held for review, never blindly retried.
   const claim = await write((tx) =>
     tx.execute({
@@ -255,18 +256,30 @@ export async function processFulfillment(id: string, courier?: DhlSandbox) {
       receiver,
       parcel: order.data.parcel,
       service,
+      checkpoint: async (shipment) => {
+        await write((tx) =>
+          tx.execute({
+            sql: "UPDATE fulfillment SET state='test_label_created', data=? WHERE order_id=?",
+            args: [JSON.stringify(shipment), id],
+          }),
+        );
+      },
     });
+    const state =
+      shipment.pickupState === "review_required"
+        ? "test_label_created"
+        : "test_booked";
     await write((tx) =>
       tx.execute({
-        sql: "UPDATE fulfillment SET state='test_booked', data=? WHERE order_id=?",
-        args: [JSON.stringify(shipment), id],
+        sql: "UPDATE fulfillment SET state=?, data=? WHERE order_id=?",
+        args: [state, JSON.stringify(shipment), id],
       }),
     );
-    return "test_booked";
+    return state;
   } catch {
     await write((tx) =>
       tx.execute({
-        sql: "UPDATE fulfillment SET state='review_required' WHERE order_id=?",
+        sql: "UPDATE fulfillment SET state='review_required' WHERE order_id=? AND state='creating'",
         args: [id],
       }),
     );

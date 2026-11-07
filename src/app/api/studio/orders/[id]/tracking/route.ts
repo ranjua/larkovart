@@ -1,5 +1,5 @@
 import { session, sameOrigin } from "@/lib/auth";
-import { dhl } from "@/lib/integrations/dhl";
+import { courierAdapter } from "@/lib/shipping";
 import { db, init } from "@/lib/store";
 export async function POST(
   request: Request,
@@ -13,12 +13,18 @@ export async function POST(
     sql: "SELECT state, data FROM fulfillment WHERE order_id=?",
     args: [id],
   });
-  if (result.rows[0]?.state !== "test_booked")
+  if (
+    !["test_booked", "test_label_created"].includes(
+      String(result.rows[0]?.state),
+    )
+  )
     return Response.json({ error: "shipment_not_ready" }, { status: 404 });
   try {
     const shipment = JSON.parse(String(result.rows[0].data));
     return Response.json(
-      await dhl().tracking(shipment.shipmentTrackingNumber),
+      await courierAdapter(shipment.carrier || "dhl").tracking(
+        shipment.shipmentTrackingNumber,
+      ),
       { headers: { "Cache-Control": "no-store" } },
     );
   } catch {

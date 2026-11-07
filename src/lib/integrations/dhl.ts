@@ -18,7 +18,7 @@ export const parcelSchema = z
     "Net weight cannot exceed packed weight.",
   );
 export type Parcel = z.infer<typeof parcelSchema>;
-const contactSchema = z.object({
+export const contactSchema = z.object({
   name: z.string().min(2).max(45),
   email: z.email(),
   phone: z.string().min(7).max(25),
@@ -105,6 +105,18 @@ export class DhlSandbox {
     parcel: Parcel,
     amount: number,
   ) {
+    const choices = await this.quoteOptions(receiver, parcel, amount);
+    return (
+      choices.find(
+        (c) => c.amountCents <= parcel.shippingBudget && c.amountCents < amount,
+      )?.service || null
+    );
+  }
+  async quoteOptions(
+    receiver: ShippingContact,
+    parcel: Parcel,
+    amount: number,
+  ) {
     contactSchema.parse(receiver);
     parcelSchema.parse(parcel);
     const result = await this.request("/rates", {
@@ -144,10 +156,12 @@ export class DhlSandbox {
         .map((t) => ({ code: p.productCode, cents: Math.ceil(t.price * 100) })),
     );
     choices.sort((a, b) => a.cents - b.cents);
-    return (
-      choices.find((c) => c.cents <= parcel.shippingBudget && c.cents < amount)
-        ?.code || null
-    );
+    return choices.map((c) => ({
+      carrier: "dhl" as const,
+      service: c.code,
+      amountCents: c.cents,
+      currency: "USD" as const,
+    }));
   }
   async shipment(input: {
     orderId: string;
@@ -255,7 +269,10 @@ export function dhlConfigured() {
     !!process.env.DHL_TEST_USERNAME &&
     !!process.env.DHL_TEST_PASSWORD &&
     !!process.env.DHL_TEST_ACCOUNT &&
-    !!process.env.DHL_TEST_SHIPPER_JSON
+    !!(
+      process.env.SHIPPING_TEST_SHIPPER_JSON ||
+      process.env.DHL_TEST_SHIPPER_JSON
+    )
   );
 }
 export function dhl() {
@@ -266,7 +283,11 @@ export function dhl() {
     password: process.env.DHL_TEST_PASSWORD || "",
     account: process.env.DHL_TEST_ACCOUNT || "",
     shipper: contactSchema.parse(
-      JSON.parse(process.env.DHL_TEST_SHIPPER_JSON || "{}"),
+      JSON.parse(
+        process.env.SHIPPING_TEST_SHIPPER_JSON ||
+          process.env.DHL_TEST_SHIPPER_JSON ||
+          "{}",
+      ),
     ),
   });
 }

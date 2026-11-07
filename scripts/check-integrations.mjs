@@ -13,6 +13,15 @@ for (const key of [
   "DHL_TEST_PASSWORD",
   "DHL_TEST_ACCOUNT",
   "DHL_TEST_SHIPPER_JSON",
+  "SHIPPING_TEST_SHIPPER_JSON",
+  "FORZA_TEST_CODAPP",
+  "FORZA_TEST_SECRET",
+  "FORZA_TEST_MERCHANT_ID",
+  "FORZA_TEST_PICKUP_POINT_ID",
+  "FEDEX_TEST_CLIENT_ID",
+  "FEDEX_TEST_CLIENT_SECRET",
+  "FEDEX_TEST_ACCOUNT",
+  "TEST_GTQ_PER_USD",
   "CRON_SECRET",
 ])
   console.log(`${key}: ${status(key)}`);
@@ -46,3 +55,13 @@ if (
   failed = true;
 }
 process.exitCode = failed ? 1 : 0;
+
+for (const [key, environment] of [
+  ["FORZA_TEST_CODAPP", "FORZA_ENVIRONMENT"],
+  ["FEDEX_TEST_CLIENT_ID", "FEDEX_ENVIRONMENT"],
+]) {
+  if (process.env[key] && process.env[environment] !== "sandbox") {
+    console.error(`${environment} must be sandbox.`);
+    process.exitCode = 1;
+  }
+}
