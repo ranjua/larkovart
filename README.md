@@ -1,114 +1,133 @@
-# Larko Art - Modern Artist Website
+# Larkova Art — new development storefront
 
-A modern, responsive static website for contemporary artist Larko, showcasing paintings, drawings, and sculptures with an olive green theme.
+A **fresh Next.js / TypeScript implementation** for Yulia Larkova's original art,
+designed for Vercel. The previous site is preserved byte-for-byte under `_old/`.
+No old HTML, JavaScript or CSS is imported. Only artwork photographs and artist
+information were carried forward.
 
-## Features
+## Start locally
 
-- **Modern Design**: Clean, responsive layout with olive green color scheme
-- **Multiple Galleries**: Dedicated pages for paintings, drawings, and sculptures
-- **Interactive Elements**: Smooth animations, hover effects, and mobile navigation
-- **Media Integration**: Embedded YouTube videos and Sketchfab 3D models
-- **Artist Bio**: Detailed information about the artist's background and philosophy
-- **Responsive Design**: Optimized for desktop, tablet, and mobile devices
+Use Node.js 24:
 
-## Tech Stack
-
-- **HTML5**: Semantic markup and modern structure
-- **CSS3**: Grid/Flexbox layouts, custom properties, animations, and transitions
-- **Vanilla JavaScript**: Interactive features and smooth scrolling
-- **Responsive Design**: Mobile-first approach with breakpoints
-
-## Project Structure
-
-```
-larkovart/
-├── index.html          # Landing page with hero section
-├── bio.html           # Artist biography and background
-├── paintings.html     # Paintings gallery with 5 artworks
-├── drawings.html      # Drawings gallery with 5 artworks
-├── sculptures.html    # Sculptures gallery with 3 artworks
-├── config.json        # Centralized configuration file
-├── css/
-│   └── style.css      # Main stylesheet with olive green theme
-├── js/
-│   └── script.js      # JavaScript for interactivity and config loading
-├── images/            # Directory for artwork images
-├── .gitignore         # Git ignore file
-└── README.md          # This file
+```bash
+npm ci
+cp .env.example .env.local
+npm run dev
 ```
 
-## Getting Started
+Open `http://127.0.0.1:3000`. Spanish is the default; the language selector remembers
+your choice. Routes also support `/en`, `/ru`, `/zh`, `/ja`, and `/pt`.
+Chinese uses Simplified Chinese; Portuguese copy uses Brazilian Portuguese.
 
-1. **Clone the repository**:
-   ```bash
-   git clone https://github.com/ranjua/larkovart.git
-   cd larkovart
-   ```
+To enable `/studio`, set `STUDIO_PASSWORD` to a random password of at least 24
+characters in `.env.local`. Do not commit it. The workspace uses signed,
+HTTP-only, eight-hour sessions. The current development workspace already has an
+ignored `.env.local` containing a generated password.
 
-2. **Run locally**:
-   ```bash
-   # Using Python (recommended)
-   python -m http.server 8000
+## Working in this development version
 
-   # Or using Node.js (if available)
-   npx serve .
+- Responsive storefront, artwork details, category filters and sold states.
+- Actual existing artwork photos, with uncropped detail images.
+- A **CSS room visualization**, clearly labeled approximate and illustrative. It
+  is not an AI-generated photo, an exact scale reference, or a promised frame.
+- Six-language storefront, descriptions, delivery information and test checkout.
+- Persistent local SQLite/libSQL catalog and orders in ignored `.data/`.
+- Transactional one-of-a-kind purchasing with contention retries; one successful
+  test purchase makes the original unavailable to all other buyers.
+- In default demo mode, Guatemala orders simulate payment. Other destinations save quote requests,
+  without consuming inventory or collecting payment. Guatemala delivery is a
+  demonstration rule, not a verified carrier quote.
+- Private studio for photo uploads, six-language descriptions, unpublished
+  drafts, catalog visibility, sample prices, and test orders.
+- Optional AI listing descriptions using the OpenAI Responses API. Configure
+  `OPENAI_API_KEY` and `OPENAI_TEXT_MODEL` explicitly to enable it. Generated text
+  is returned for review and never automatically published. No external AI calls
+  were made during development. See [official structured-output documentation](https://developers.openai.com/api/docs/guides/structured-outputs?api-mode=responses).
 
-   # Or using PHP
-   php -S localhost:8000
-   ```
+All prices are **sample development prices** ($75–$1,000), not artist-approved
+offers. Existing sold states are retained. Dates, dimensions, media and biography
+were carried over from the earlier catalog and should be confirmed by the artist.
+Original artwork titles are retained in every language.
 
-3. **Open in browser**:
-   Navigate to `http://localhost:8000` to view the website.
+Uploaded draft photographs are stored as data URLs in the development database
+(4 MB maximum). This keeps development self-contained. Move uploads to private
+object storage, with published derivatives, before a real store launch.
 
-## Color Scheme
+## Payment and courier integration status
 
-- **Primary**: Olive Green (#6B8E23)
-- **Secondary**: Dark Olive Green (#556B2F)
-- **Accent**: Golden Yellow (#DAA520)
-- **Background**: Beige (#F5F5DC)
-- **Text**: Dark Green (#2F4F2F)
+Recurrente Sandbox checkout and DHL Express test ratings, labels, pickup and
+tracking are implemented. The order flow includes checkout inventory holds,
+server-side amount verification, signed webhooks, durable replay protection,
+expiry reconciliation and idempotent fulfillment jobs. The studio supports
+packing data and test label downloads. A 249-country selector is checked against
+actual courier availability and an artist-configured shipping allowance.
 
-## Configuration
+**The provider accounts and Vercel are not connected yet.** No provider credentials
+were available during implementation. Integration tests use injected transports,
+not real provider accounts. No real payment, bank payout, courier collection,
+customer email, image enhancement or domain change has occurred.
 
-The website is fully configurable through `config.json`. This centralized configuration file contains:
+Follow [the integration setup guide](docs/INTEGRATIONS.md) to configure isolated
+Sandbox/test accounts, a development cloud database and a Vercel Preview. Run
+`npm run integrations:check` to see missing configuration names without exposing
+secrets. AI image editing, refund/dispute handling, real payouts and live courier
+operations remain outside this development version.
 
-- **General Settings**: Site title, artist name, colors, navigation, footer
-- **Assets Configuration**: 
-  - **Paintings**: Video embed, 5 images with metadata, no 3D render
-  - **Drawings**: Video embed, 5 images with metadata, no 3D render  
-  - **Sculptures**: Video embed, 3 images with metadata, 3D render embed
+## Vercel development preview
 
-Each asset includes properties like title, URL, description, medium, dimensions, year, and quality. To update content, simply edit `config.json` - no code changes needed. The HTML files are now template-based and populate content dynamically from the configuration.
+Do not deploy production from this development task. The Next.js project can be
+imported into Vercel for an isolated **Preview** environment after access is
+configured. Supply a separate development libSQL database and set:
 
-## Features Implemented
+```text
+DATABASE_URL=libsql://YOUR-DEVELOPMENT-DATABASE
+DATABASE_AUTH_TOKEN=YOUR-DEVELOPMENT-TOKEN
+DATABASE_ENVIRONMENT=development
+STUDIO_PASSWORD=YOUR-RANDOM-DEVELOPMENT-PASSWORD
+```
 
-- ✅ Responsive navigation with mobile hamburger menu
-- ✅ Smooth scrolling and page transitions
-- ✅ Gallery lightbox for image viewing
-- ✅ Hover effects and animations
-- ✅ Embedded YouTube videos in galleries
-- ✅ Sketchfab 3D model embeds (sculptures only)
-- ✅ Intersection Observer for scroll animations
-- ✅ Lazy loading for images
-- ✅ Parallax effects on hero section
-- ✅ Centralized configuration management
-- ✅ Dynamic HTML content generation from config.json
+Without a database URL on Vercel, the application deliberately fails instead of
+pretending local filesystem storage is durable. It refuses a configured database
+unless `DATABASE_ENVIRONMENT=development`. All pages are marked `noindex`.
+Do not enable production payment credentials or attach `larkovart.com` yet.
+No domain lookup, renewal, DNS change, or hosting deployment was performed.
 
-## Browser Support
+## Validation
 
-- Chrome/Edge (latest)
-- Firefox (latest)
-- Safari (latest)
-- Mobile browsers (iOS Safari, Chrome Mobile)
+```bash
+npm test
+npm run typecheck
+npm run build
+```
 
-## Future Enhancements
+Store tests create and remove a dedicated temporary development database. They
+cover concurrent buyers, international quotes, sold inventory, draft visibility,
+and server-controlled pricing.
 
-- Contact form integration
-- Image optimization and WebP support
-- Dark mode toggle
-- Gallery filtering and search
-- Print styles for artwork details
+Integration tests also cover sandbox-only credentials, checkout holds, signed
+webhooks and replay handling, verified amounts, expiry, and duplicate-shipment
+prevention. Provider transports are fixtures; actual account verification remains
+pending sandbox credentials.
 
-## License
+Browser tests are in `tests/browser.py`; they start an isolated local Next.js
+server and use only temporary test data:
 
-© 2024 Larko Art. All rights reserved.
+```bash
+python3 -m venv .venv
+.venv/bin/pip install -r tests/requirements.txt
+.venv/bin/python -m playwright install chromium
+npm run build
+.venv/bin/python tests/browser.py
+.venv/bin/python tests/sandbox_browser.py
+```
+
+## Repository layout
+
+```text
+_old/             Unmodified original site and its original tests
+public/           Existing artist and artwork photos
+src/app/          Next.js routes and development API endpoints
+src/components/   New gallery, checkout and studio interfaces
+src/lib/          Six-language copy, catalog, auth and transactional store
+tests/            Isolated store and browser checks
+```
