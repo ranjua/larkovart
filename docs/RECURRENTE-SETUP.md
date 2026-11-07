@@ -1,33 +1,48 @@
-# Recurrente activation
+# Recurrente integration — verified sandbox status
 
-Delivery configuration remains paused. Do not enable courier booking for payment tests.
+## Connected
 
-## Owner setup — required once
+- Yulia's Sandbox TEST key is protected in Vercel Preview. The Sandbox ID was retrieved from authenticated `/api/test` and saved automatically.
+- Recurrente is the selected Preview payment provider. PayPal credentials are retained. Live processing is disabled by code and environment settings.
+- Sandbox webhook endpoint registered automatically, confirmed enabled, and its URL verified against the intended destination. The preview stays protected; a private Vercel automation token allows the callback to reach the handler. That token is never placed in public/client code or documentation.
+- The Svix signing secret is encrypted with AES-256-GCM in the development database. Registration is durably claimed and will not create duplicate endpoints after an ambiguous outcome.
+- Raw-body signature verification, exact Sandbox ID checks and explicit live-event rejection are enforced. `live_mode` is optional when the native serializer omits it, but any explicit live flag is rejected. Accepted message IDs are persisted and deduplicated.
 
-1. Sign in/create Yulia Larkova's account at https://app.recurrente.com using larkova.art@gmail.com. If offered, choose “Solo quiero integrar la API” for testing before live activation.
-2. Configuración → Llaves API → Abrir Sandbox. Create/select “Larkova Art”, then create a TEST key.
-3. In Vercel larkovart-dev → Environment Variables → Preview, save `RECURRENTE_SECRET_KEY` (sk_test_...) and `RECURRENTE_SANDBOX_ID` (sbx_...). If the Sandbox ID is not shown in the dashboard, the agent can retrieve it from the authenticated `/test` response after the key is saved. Never send secrets through chat.
+## External tests completed — no real money
 
-Authentication is checked during hosted builds. PayPal stays selected until Recurrente is verified. A Sandbox cannot settle to a bank or move real money.
+Executed through the hosted Recurrente checkout, not only mocked transports:
 
-## Implemented
+| Test | Observed result |
+|---|---|
+| USD 1 checkout, documented success card | Provider paid state verified server-side |
+| Documented decline card | Provider displayed simulated decline; checkout stayed unpaid |
+| Full USD 1 refund | Provider returned succeeded; subsequent GET confirmed it |
+| Natural payment webhook | Signed `intent.succeeded` received and recorded |
+| Natural decline webhook | Signed `intent.failed` received and recorded |
+| Natural refund webhook | Signed `refund.create` received and recorded |
+| Connectivity fixtures | Two signed `intent.pending` messages accepted; no payment graph created |
+| Unsigned request | Callback returned HTTP 400 |
 
-- Sandbox hosted card checkout with server-owned amount/reference and inventory hold.
-- Signed Svix webhook parsing, environment checks, durable message deduplication, provider-side payment verification and inventory reconciliation.
-- Sandbox refund client verifies original checkout reference, USD amount, paid state and canonical payment intent before sending a full refund with a stable idempotency key. Refund status can be retrieved.
-- Authenticated studio-only USD 1 test checkout/verify/refund flow, with durable atomic creation/refund claims. It does not reserve originals, create fulfillment jobs, or book delivery. Ambiguous writes stay in review and are not retried blindly.
-- Hosted credential validation; no keys are printed.
+The private studio includes a test checkout/verify/refund panel. It creates separate durable test records, not store orders. It never reserves originals, changes inventory or creates fulfillment jobs. Atitlan, Gato and Mar2 remained available after testing. No real card, money, bank payout, label or collection was used.
 
-## Pending account verification and launch work
+## Automated checks
 
-- No Recurrente key, Sandbox ID or webhook secret was present at the start of this task; no external Recurrente transaction has been completed.
-- After keys exist: verify hosted authentication, complete approved and declined sandbox card tests, verify refund and pending/ambiguous outcomes.
-- Register a public, stable webhook endpoint; Vercel preview authentication must not block Recurrente's requests. Keep unrelated preview pages protected. Save the returned Svix signing secret privately as `RECURRENTE_WEBHOOK_SECRET`; verify an actual delivered signed event. Existing webhook registration script targets a public preview URL and must be adapted to a confirmed reachable endpoint before use.
-- The studio probe is verified by explicit server reads. It does not yet reconcile its own state automatically from incoming webhooks; store order webhooks use the normal durable handler.
-- Production credentials, merchant verification, receiving USD/GTQ, Guatemala bank payout setup/fees, real-money refunds and production launch remain pending. These require the owner's legitimate merchant account and bank information. Do not call the integration live-ready before those checks pass.
+30 tests pass, including environment rejection, amounts/references, refund idempotency, signature freshness, Sandbox isolation, encrypted secret integrity and duplicate fulfillment protection. Type checking, build and studio browser checks pass. Deployed Preview is READY.
+
+## Live activation remains pending
+
+- Owner completes Recurrente merchant verification and bank payout setup in Recurrente; confirm receiving/settlement currencies, fees and payout eligibility.
+- Live keys, a separate live webhook secret and live-mode payment/refund handling must be implemented/configured and validated before accepting real sales. Current factory deliberately accepts Sandbox only.
+- Store checkout still requires eligible shipping and confirmed parcel data. Delivery configuration remains paused at the owner's request; automatic shipping test booking is disabled. The independent payment test does not bypass those safeguards for actual originals.
+- This is not a live sales launch and is not proof of real bank settlement or 3DS behavior.
+
+## Maintenance
+
+- Recurrente API-key rotation requires re-encrypting the stored webhook secret with the new key or securely restoring it from Recurrente's webhook dashboard. Never blindly create another endpoint to recover from uncertainty.
+- A changed callback URL or Vercel automation token requires an intentional endpoint update. The setup script detects mismatches and stops instead of duplicating registrations.
+- Keep sandbox IDs, webhook records and test payment receipts for audit. Do not turn connectivity fixtures into claims of completed payments; actual payment/refund states were separately verified above.
 
 Official references:
 - https://docs.recurrente.com/guides-english/getting-started/first-test-payment
-- https://docs.recurrente.com/guides-english/guides/sandboxes-and-test-clocks
 - https://docs.recurrente.com/guides-english/getting-started/webhooks
 - https://docs.recurrente.com/referencia-api/api-reference/refunds/create-refund

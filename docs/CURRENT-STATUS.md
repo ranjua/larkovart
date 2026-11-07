@@ -21,32 +21,26 @@ Outstanding when delivery resumes:
 
 ## Payments
 
-PayPal:
-- Owner reports Yulia Larkova's PayPal Business signup completed. Business email: larkova.art@gmail.com. Account verification, live receiving eligibility and Guatemala payout route have not been independently verified.
-- Preview selects PayPal sandbox. Protected sandbox client ID/secret are present; hosted OAuth authentication succeeds.
-- Code implements hosted approval, server-side capture, stable capture retry IDs, order/amount checks and inventory holds.
-- Current tests use injected provider responses; no complete external buyer approval/capture test has been completed. No real payment or payout has occurred.
-- Checkout currently requires a confirmed parcel and eligible shipping quote BEFORE creating a payment order. Pausing delivery leaves end-to-end checkout blocked. Packing estimates alone do not satisfy that gate.
-- Payment factory rejects non-sandbox environments. No live PayPal client exists in the current deployment. Dedicated PayPal webhooks, refund management, live launch settings and durable payment reconciliation need completion/verification before launch.
-- Next payment work can be developed independently of delivery: sandbox-specific payment testing decoupled from label/pickup creation, PayPal webhook verification/reconciliation and refunds. Do not weaken live shipping safeguards or charge anyone without specific authorization.
+Recurrente is now the selected Preview provider. Sandbox authentication, a hosted USD 1 successful payment, a simulated decline and a full refund have been verified against Recurrente. Signed natural `intent.succeeded`, `intent.failed` and `refund.create` callbacks were received and recorded. Webhook registration and encrypted signing-secret storage are automated; the preview remains protected. The studio has an independent test panel that never reserves originals or creates shipments.
 
-Other providers:
-- Stripe sandbox Checkout and signed webhook code implemented. No Stripe credentials or eligible live merchant account connected. Guatemala is not on Stripe's direct merchant-country list; do not fabricate eligibility.
-- Recurrente sandbox connector implemented; no account credentials connected.
-- NeoNet/VisaNet payment links/NeoPay: researched only. No merchant affiliation, verified API integration or live settlement connected. Visa is a card network; accepting Visa depends on the chosen payment processor and merchant eligibility.
+Live payments are NOT enabled. Merchant verification, bank payout setup, live keys, separate live webhook settings and live-mode payment/refund handling remain pending. Current code deliberately accepts Sandbox only. Store checkout still requires shipping readiness; delivery stays paused and automatic shipping test booking is disabled. See RECURRENTE-SETUP.md for verified evidence and remaining work.
+
+PayPal sandbox authentication remains verified and its credentials are retained, but it is no longer the selected Preview provider. A complete external PayPal purchase/capture test, dedicated PayPal webhooks, refunds and live payout eligibility remain pending.
+
+Stripe sandbox code exists with no connected credentials or eligible live merchant account. NeoNet/VisaNet is researched only, with no merchant/API connection. No real payment, refund or payout has occurred.
 
 ## Hosting and verification
 
 - Vercel project: larkovart-dev. GitHub repository ranjua/larkovart is connected; branch pushes produce previews.
-- Last verified ready preview commit: ffb404b. Latest immutable preview: https://larkovart-ifmv2y5pe-juarerandy-7417.vercel.app . Branch preview: https://larkovart-dev-git-dev-nextjs-art-store-juarerandy-7417.vercel.app . Preview protection remains enabled.
+- Last verified ready payment implementation commit: 7a6b44d. Branch preview: https://larkovart-dev-git-dev-nextjs-art-store-juarerandy-7417.vercel.app . Preview protection remains enabled.
 - Production currently contains the minimal setup placeholder, not a launched store.
-- Latest verification: 27 tests pass; type checking and build pass; preview homepage HTTP 200; hosted PayPal/Envia sandbox authentication passes.
+- Latest verification: 30 tests pass; type checking and build pass; preview homepage HTTP 200; hosted PayPal/Envia sandbox authentication passes.
 - Separate development Turso database is used by previews. Production payment/database environment configuration has not been provisioned for live commerce.
 
 ## Social
 
-Existing Instagram: @yuliaartgt. Meta catalog feed and social strategy document exist. No social OAuth connection, publishing, messaging or paid campaign is active. Account approvals and public-domain/catalog eligibility remain outstanding. No content or messages have been sent on the owner's behalf.
+Owner-confirmed primary Instagram: @larkova.art (2026-11-07; previously recorded @yuliaartgt). Meta catalog feed and social strategy document exist; see MARKETING-PLAN.md for the 90-day marketing and sales plan. No social OAuth connection, publishing, messaging or paid campaign is active. Account approvals and public-domain/catalog eligibility remain outstanding. No content or messages have been sent on the owner's behalf.
 
-## Recurrente work in progress
+## Recurrente update
 
-Owner requested full Recurrente integration while delivery stays paused. Added a studio-only USD 1 sandbox payment/verify/refund flow independent of inventory and shipping, verified refund SDK checks and hosted credential validation. 28 tests pass. No Recurrente credentials are configured yet; external payment/refund and webhook-delivery verification remain blocked on account access. See RECURRENTE-SETUP.md.
+Sandbox configuration and external payment/decline/refund/webhook tests completed. No further Sandbox key entry is required. Production activation and payouts remain pending. See RECURRENTE-SETUP.md.
