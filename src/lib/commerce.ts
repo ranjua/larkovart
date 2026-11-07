@@ -7,17 +7,18 @@ import {
 import type { Transaction } from "@libsql/client";
 import { db, init, artwork, StoreError, type OrderInput } from "./store.ts";
 import type { Artwork } from "./catalog.ts";
-import {
-  recurrente,
-  type RecurrenteSandbox,
-} from "./integrations/recurrente.ts";
+import { recurrente } from "./integrations/recurrente.ts";
 import { type ShippingContact } from "./integrations/dhl.ts";
 
 import { shipping, shippingConfigured } from "./shipping.ts";
+import {
+  payment as paymentConnection,
+  type PaymentConnection,
+} from "./payments.ts";
 import type { CourierConnection } from "./shipping-types.ts";
 
 export type SandboxProviders = {
-  payment: RecurrenteSandbox;
+  payment: PaymentConnection;
   courier: CourierConnection;
 };
 type SavedOrder = OrderInput & {
@@ -26,6 +27,7 @@ type SavedOrder = OrderInput & {
   currency: "USD";
   mode: "sandbox";
   service: string;
+  paymentProvider?: string;
   parcel: NonNullable<Artwork["parcel"]>;
 };
 export function buyerContact(input: OrderInput): ShippingContact {
@@ -74,7 +76,10 @@ async function write<T>(fn: (tx: Transaction) => Promise<T>): Promise<T> {
 export async function startSandboxCheckout(
   input: OrderInput,
   locale: string,
-  providers: SandboxProviders = { payment: recurrente(), courier: shipping() },
+  providers: SandboxProviders = {
+    payment: paymentConnection(),
+    courier: shipping(),
+  },
 ) {
   const a = await artwork(input.artworkId);
   if (!a || a.status !== "available") throw new StoreError("unavailable", 409);
@@ -97,6 +102,11 @@ export async function startSandboxCheckout(
     price: a.price,
     currency: "USD",
     mode: "sandbox",
+    paymentProvider:
+      process.env.PAYMENT_PROVIDER === "stripe" ||
+      process.env.PAYMENT_PROVIDER === "paypal"
+        ? process.env.PAYMENT_PROVIDER
+        : "recurrente",
     service,
     parcel: a.parcel,
   };
@@ -182,12 +192,19 @@ export async function orderState(id: string) {
     data: JSON.parse(String(row.data)) as SavedOrder,
   };
 }
-export async function reconcilePayment(id: string, payment = recurrente()) {
+export async function reconcilePayment(
+  id: string,
+  payment?: PaymentConnection,
+) {
   const local = await orderState(id);
   if (local.status === "sandbox_paid" || local.status === "payment_expired")
     return local.status;
   if (!local.checkoutId) return local.status;
-  const remote = await payment.get(local.checkoutId);
+  payment ||= paymentConnection(local.data.paymentProvider || "recurrente");
+  const remote = await payment.get(local.checkoutId, {
+    orderId: id,
+    amount: local.data.price,
+  });
   if (
     remote.id !== local.checkoutId ||
     remote.live_mode !== false ||
@@ -311,7 +328,7 @@ export async function reconcilePending() {
 export async function receiveWebhook(
   messageId: string,
   checkoutId: string,
-  payment = recurrente(),
+  payment: PaymentConnection = recurrente(),
 ) {
   await init();
   await write((tx) =>

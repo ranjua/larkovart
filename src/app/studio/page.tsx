@@ -15,7 +15,21 @@ export default async function StudioPage() {
       </Link>
       {authorized && (
         <IntegrationPanel
-          payment={recurrenteConfigured()}
+          paymentName={
+            process.env.PAYMENT_PROVIDER === "stripe"
+              ? "Stripe"
+              : process.env.PAYMENT_PROVIDER === "paypal"
+                ? "PayPal"
+                : "Recurrente"
+          }
+          payment={
+            process.env.PAYMENT_PROVIDER === "stripe"
+              ? !!process.env.STRIPE_SECRET_KEY
+              : process.env.PAYMENT_PROVIDER === "paypal"
+                ? !!process.env.PAYPAL_SANDBOX_CLIENT_ID &&
+                  !!process.env.PAYPAL_SANDBOX_SECRET
+                : recurrenteConfigured()
+          }
           couriers={shippingStatus()}
           autoBook={process.env.SHIPPING_AUTO_BOOK_TEST !== "false"}
         />

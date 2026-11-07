@@ -26,7 +26,9 @@ export default async function CheckoutPage({
         <Checkout
           art={a}
           locale={locale}
-          sandbox={process.env.PAYMENT_PROVIDER === "recurrente"}
+          sandbox={["recurrente", "stripe", "paypal"].includes(
+            process.env.PAYMENT_PROVIDER || "",
+          )}
           countryOptions={localizedCountries(locale)}
         />
       ) : (

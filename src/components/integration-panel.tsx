@@ -3,10 +3,12 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 export function IntegrationPanel({
   payment,
+  paymentName = "Recurrente",
   couriers,
   autoBook,
 }: {
   payment: boolean;
+  paymentName?: string;
   couriers: { id: string; name: string; configured: boolean }[];
   autoBook: boolean;
 }) {
@@ -18,7 +20,7 @@ export function IntegrationPanel({
       <div>
         <h2>Payments & courier connections</h2>
         <p className="studio-note">
-          Recurrente Sandbox:{" "}
+          {paymentName} Sandbox:{" "}
           {payment
             ? "credentials configured; provider verification required"
             : "awaiting sandbox credentials"}

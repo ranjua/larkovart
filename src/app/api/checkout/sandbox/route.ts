@@ -9,7 +9,9 @@ export async function POST(request: Request) {
   if (!sameOrigin(request))
     return Response.json({ error: "invalid_origin" }, { status: 403 });
   if (
-    process.env.PAYMENT_PROVIDER !== "recurrente" ||
+    !["recurrente", "stripe", "paypal"].includes(
+      process.env.PAYMENT_PROVIDER || "",
+    ) ||
     process.env.PAYMENT_ENVIRONMENT !== "sandbox"
   )
     return Response.json({ error: "sandbox_not_configured" }, { status: 503 });
