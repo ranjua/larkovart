@@ -20,4 +20,4 @@ Account registration needs the owner's chosen business email and legal account o
 
 ## Owner confirmation
 
-Business email: larkova.art@gmail.com. Owner confirmed USD 100 each, shipping included, for the three available originals: Atitlan, Gato and Mar2. Shipping acceptance still requires an eligible quote within the artwork budget; no shipping budget or packed measurements were invented. Sold originals remain sold. Legal merchant account owner still needs confirmation before financial registration.
+Business email: larkova.art@gmail.com. Owner confirmed USD 100 each, shipping included, for the three available originals: Atitlan, Gato and Mar2. Shipping acceptance still requires an eligible quote within the artwork budget; no shipping budget or packed measurements were invented. Sold originals remain sold. Legal merchant account owner confirmed: Yulia Larkova.
