@@ -129,6 +129,17 @@ export class RecurrenteSandbox {
       })
       .parse(result);
   }
+  async sendWebhookFixture() {
+    await this.verifyEnvironment();
+    await this.request("/test_helpers/webhook_events", "POST", {
+      event_type: "intent.pending",
+      data: {
+        live_mode: false,
+        checkout: null,
+        metadata: { integration_case: "larkovart-connectivity" },
+      },
+    });
+  }
   async getRefund(id: string) {
     await this.verifyEnvironment();
     return z

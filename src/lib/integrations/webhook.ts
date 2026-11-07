@@ -16,10 +16,15 @@ export function verifyRecurrenteWebhook(
   });
   const event = z
     .object({
-      live_mode: z.literal(false),
+      live_mode: z.literal(false).optional(),
       sandbox_id: z.literal(sandboxId),
       event_type: z.string().optional(),
-      checkout: z.object({ id: z.string().min(1) }).nullish(),
+      checkout: z
+        .object({
+          id: z.string().min(1),
+          live_mode: z.literal(false).optional(),
+        })
+        .nullish(),
     })
     .parse(JSON.parse(raw));
   return {

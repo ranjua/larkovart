@@ -103,6 +103,33 @@ if (key && sandbox && bypass && base) {
         "Existing Recurrente sandbox webhook configuration verified; no duplicate endpoint created.",
       );
     }
+    const endpointsResponse = await fetch(
+      "https://app.recurrente.com/api/webhook_endpoints",
+      {
+        headers: { "X-SECRET-KEY": key },
+        redirect: "error",
+        signal: AbortSignal.timeout(20000),
+      },
+    );
+    if (endpointsResponse.ok) {
+      const endpoints = await endpointsResponse.json();
+      const match = Array.isArray(endpoints)
+        ? endpoints.find(
+            (e) => e.description === "Larkova Art isolated sandbox",
+          )
+        : undefined;
+      console.log(
+        "Recurrente callback endpoint: " +
+          JSON.stringify({
+            found: !!match,
+            disabled: match?.disabled,
+            urlMatches:
+              typeof match?.url === "string" &&
+              createHash("sha256").update(match.url).digest("hex") ===
+                fingerprint,
+          }),
+      );
+    }
     const fixtureName = "recurrente:webhook:fixture:" + sandbox;
     const fixture = await client.execute({
       sql: "INSERT OR IGNORE INTO integration_secrets(name,state) VALUES(?,'submitting')",

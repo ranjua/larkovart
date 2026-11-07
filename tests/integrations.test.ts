@@ -394,3 +394,38 @@ test("an ambiguous courier result is not retried into a duplicate shipment", asy
   );
   assert.equal(attempts, 1);
 });
+
+test("signed Sandbox events accept optional live-mode fields but reject explicit live payloads", () => {
+  const secret =
+    "whsec_" + Buffer.from("isolated-webhook-fixture-key").toString("base64");
+  const wh = new Webhook(secret);
+  const id = "msg_native_optional";
+  const date = new Date();
+  const check = (value: unknown) => {
+    const raw = JSON.stringify(value);
+    const headers = new Headers({
+      "svix-id": id,
+      "svix-timestamp": String(Math.floor(date.getTime() / 1000)),
+      "svix-signature": wh.sign(id, date, raw),
+    });
+    return verifyRecurrenteWebhook(raw, headers, secret, "sbx_unit");
+  };
+  assert.equal(
+    check({
+      sandbox_id: "sbx_unit",
+      event_type: "intent.pending",
+      checkout: { id: "ch_fixture" },
+    }).checkoutId,
+    "ch_fixture",
+  );
+  assert.throws(() =>
+    check({
+      sandbox_id: "sbx_unit",
+      checkout: { id: "ch_fixture", live_mode: true },
+    }),
+  );
+  assert.throws(() =>
+    check({ sandbox_id: "sbx_other", checkout: { id: "ch_fixture" } }),
+  );
+  assert.throws(() => check({ checkout: { id: "ch_fixture" } }));
+});

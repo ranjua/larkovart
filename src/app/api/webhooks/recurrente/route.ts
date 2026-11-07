@@ -25,7 +25,18 @@ export async function POST(request: Request) {
       secret,
       process.env.RECURRENTE_SANDBOX_ID,
     );
-  } catch {
+  } catch (error) {
+    const diagnostic = error as {
+      name?: string;
+      issues?: { path: unknown[] }[];
+    };
+    console.warn(
+      "recurrente_webhook_rejected",
+      JSON.stringify({
+        kind: diagnostic.name || "unknown",
+        paths: diagnostic.issues?.map((i) => i.path),
+      }),
+    );
     return Response.json(
       { error: "invalid_signature_or_environment" },
       { status: 400 },

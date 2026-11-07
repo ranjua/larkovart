@@ -4,7 +4,7 @@ import { db, init } from "@/lib/store";
 import { recurrente } from "@/lib/integrations/recurrente";
 export const maxDuration = 120;
 const inputSchema = z.object({
-  action: z.enum(["create", "check", "refund"]),
+  action: z.enum(["create", "check", "refund", "webhook"]),
   id: z.uuid(),
 });
 export async function POST(request: Request) {
@@ -21,6 +21,35 @@ export async function POST(request: Request) {
     );
     const provider = recurrente();
     await provider.verifyEnvironment();
+    if (action === "webhook") {
+      await db().execute(
+        "CREATE TABLE IF NOT EXISTS recurrente_fixture_requests(id TEXT PRIMARY KEY,state TEXT NOT NULL)",
+      );
+      const claimed = await db().execute({
+        sql: "INSERT OR IGNORE INTO recurrente_fixture_requests VALUES(?,'submitting')",
+        args: [id],
+      });
+      if (claimed.rowsAffected) {
+        try {
+          await provider.sendWebhookFixture();
+          await db().execute({
+            sql: "UPDATE recurrente_fixture_requests SET state='submitted' WHERE id=?",
+            args: [id],
+          });
+        } catch {
+          await db().execute({
+            sql: "UPDATE recurrente_fixture_requests SET state='review' WHERE id=?",
+            args: [id],
+          });
+          throw Error("fixture_review");
+        }
+      }
+      return Response.json({
+        sandbox: true,
+        fixtureSubmitted: true,
+        paymentCreated: false,
+      });
+    }
     if (action === "create") {
       const created = await db().execute({
         sql: "INSERT OR IGNORE INTO recurrente_probes(id,state) VALUES(?,'creating')",
