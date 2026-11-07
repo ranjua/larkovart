@@ -46,3 +46,7 @@ Other providers:
 ## Social
 
 Existing Instagram: @yuliaartgt. Meta catalog feed and social strategy document exist. No social OAuth connection, publishing, messaging or paid campaign is active. Account approvals and public-domain/catalog eligibility remain outstanding. No content or messages have been sent on the owner's behalf.
+
+## Recurrente work in progress
+
+Owner requested full Recurrente integration while delivery stays paused. Added a studio-only USD 1 sandbox payment/verify/refund flow independent of inventory and shipping, verified refund SDK checks and hosted credential validation. 28 tests pass. No Recurrente credentials are configured yet; external payment/refund and webhook-delivery verification remain blocked on account access. See RECURRENTE-SETUP.md.

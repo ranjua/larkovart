@@ -9,6 +9,7 @@ const checkoutSchema = z.object({
   currency: z.string().optional(),
   metadata: z.object({ order_id: z.string() }).optional(),
   checkout_url: z.url().optional(),
+  latest_intent: z.object({ id: z.string() }).nullish(),
 });
 export type ProviderCheckout = z.infer<typeof checkoutSchema>;
 export class IntegrationError extends Error {
@@ -33,7 +34,12 @@ export class RecurrenteSandbox {
   }
   private config: { key: string; sandboxId: string };
   private transport: typeof fetch;
-  private async request(path: string, method = "GET", body?: unknown) {
+  private async request(
+    path: string,
+    method = "GET",
+    body?: unknown,
+    extraHeaders: Record<string, string> = {},
+  ) {
     const response = await this.transport(`${base}${path}`, {
       method,
       redirect: "error",
@@ -41,6 +47,7 @@ export class RecurrenteSandbox {
       headers: {
         "X-SECRET-KEY": this.config.key,
         "Content-Type": "application/json",
+        ...extraHeaders,
       },
       body: body === undefined ? undefined : JSON.stringify(body),
       signal: AbortSignal.timeout(20_000),
@@ -92,6 +99,45 @@ export class RecurrenteSandbox {
     )
       throw new IntegrationError("invalid_checkout_url");
     return checkout;
+  }
+  async refundCheckout(input: {
+    checkoutId: string;
+    orderId: string;
+    amount: number;
+    idempotencyKey: string;
+  }) {
+    const checkout = await this.get(input.checkoutId);
+    if (
+      checkout.status !== "paid" ||
+      checkout.metadata?.order_id !== input.orderId ||
+      checkout.total_in_cents !== input.amount ||
+      checkout.currency !== "USD" ||
+      !checkout.latest_intent?.id.startsWith("in_")
+    )
+      throw new IntegrationError("refund_checkout_mismatch");
+    const result = await this.request(
+      "/refunds",
+      "POST",
+      { intent_id: checkout.latest_intent.id },
+      { "Idempotency-Key": input.idempotencyKey },
+    );
+    return z
+      .object({
+        id: z.string().min(1),
+        status: z.enum(["pending", "succeeded", "failed", "voided"]),
+        failure_reason: z.string().nullish(),
+      })
+      .parse(result);
+  }
+  async getRefund(id: string) {
+    await this.verifyEnvironment();
+    return z
+      .object({
+        id: z.string().min(1),
+        status: z.enum(["pending", "succeeded", "failed", "voided"]),
+        failure_reason: z.string().nullish(),
+      })
+      .parse(await this.request(`/refunds/${encodeURIComponent(id)}`));
   }
   async get(id: string) {
     await this.verifyEnvironment();

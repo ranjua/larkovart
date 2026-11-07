@@ -1,3 +1,4 @@
+import { RecurrenteTest } from "@/components/recurrente-test";
 import Link from "next/link";
 import { session } from "@/lib/auth";
 import { artworks, studioOrders } from "@/lib/store";
@@ -34,6 +35,7 @@ export default async function StudioPage() {
           autoBook={process.env.SHIPPING_AUTO_BOOK_TEST !== "false"}
         />
       )}
+      {authorized && <RecurrenteTest configured={recurrenteConfigured()} />}
       {authorized ? (
         <Studio
           works={await artworks(true)}
