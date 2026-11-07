@@ -6,8 +6,13 @@ Admin authentication uses email OTP only for
 `larkova.art@gmail.com`. Password login and old password cookies are rejected;
 short-lived browser-bound codes, persistent throttling and revocable sessions
 are implemented. All 35 automated tests, the build and browser OTP/publishing checks pass. The OTP
-login page is deployed and verified on Vercel Preview. Real email delivery
-requires the owner's `RESEND_API_KEY`; instructions: `docs/ADMIN-LOGIN.md`.
+login page is deployed and verified on Vercel Preview. `RESEND_API_KEY` is now
+configured for Preview, Production and Development. Preview was redeployed as
+`dpl_7bp4B26DGrri5mmnjSLzGx2TYSWb`; a real OTP request returned HTTP 200, Resend
+accepted the admin-email message and the browser-bound challenge cookie was set.
+Inbox receipt and the owner's real login remain owner-confirmed steps, not inferred
+from API acceptance. The test code was not used to create an admin session.
+Instructions: `docs/ADMIN-LOGIN.md`.
 Cloudinary variables were confirmed present in all three Vercel environments;
 Cloudinary account authentication, original storage and an AI-enhanced test image
 were verified in deployment `dpl_5ZNCf3xY7EMpirhb5VVL1vkuygRQ`. The reusable test
