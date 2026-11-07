@@ -127,3 +127,12 @@ test("Envia checkpoints generated label before pickup and never recreates it on 
   assert.equal(r.pickupState, "review_required");
   assert.equal(r.documents?.length, 1);
 });
+
+test('Envia uses a privately configured sender without creating an address-book entry', async () => {
+  const client = new EnviaSandbox('fixture', async (url, init) => {
+    assert.ok(new URL(String(url)).pathname.startsWith('/available-carrier/'));
+    assert.equal(init?.method, 'GET');
+    return Response.json({data: []});
+  }, undefined, origin);
+  assert.deepEqual(await client.quotes(contact, parcel, 10000), []);
+});

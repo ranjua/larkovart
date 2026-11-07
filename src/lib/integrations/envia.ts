@@ -31,16 +31,19 @@ export class EnviaSandbox implements CourierAdapter {
   private token: string;
   private transport: typeof fetch;
   private originId?: number;
+  private configuredOrigin?: z.infer<typeof addressSchema>;
   constructor(
     token: string,
     transport: typeof fetch = fetch,
     originId?: number,
+    originAddress?: unknown,
   ) {
     if (!token || token === "[SENSITIVE]")
       throw new IntegrationError("envia_test_token_required");
     this.token = token;
     this.transport = transport;
     this.originId = originId;
+    if (originAddress) this.configuredOrigin = addressSchema.parse(originAddress);
   }
   supports(country: string) {
     return /^[A-Z]{2}$/.test(country);
@@ -67,6 +70,7 @@ export class EnviaSandbox implements CourierAdapter {
     return this.request("/available-carrier/GT/0/1", undefined, true);
   }
   private async origin() {
+    if (this.configuredOrigin) return this.configuredOrigin;
     const j = await this.request("/all-addresses", undefined, true);
     const rows = z
       .object({
@@ -324,4 +328,5 @@ export const envia = () =>
     process.env.ENVIA_TEST_ORIGIN_ID
       ? Number(process.env.ENVIA_TEST_ORIGIN_ID)
       : undefined,
+    process.env.ENVIA_TEST_ORIGIN_JSON ? JSON.parse(process.env.ENVIA_TEST_ORIGIN_JSON) : undefined,
   );
