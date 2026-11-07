@@ -15,8 +15,8 @@ export type Artwork = {
   published: boolean;
   descriptions: Record<Locale, string>;
 };
-// Prices are illustrative DEVELOPMENT data. Original sold states and artwork
-// metadata come from the archived catalog; verify all details before launch.
+// Owner confirmed USD 100 including shipping for Atitlan, Gato and Mar2.
+// Sold works retain archived sold status; their display prices are illustrative.
 export const seedArtworks: Artwork[] = [
   {
     id: "atitlan",
@@ -27,7 +27,7 @@ export const seedArtworks: Artwork[] = [
     width: 50,
     height: 50,
     year: 2024,
-    price: 42500,
+    price: 10000,
     status: "available",
     published: true,
     descriptions: {
@@ -48,7 +48,7 @@ export const seedArtworks: Artwork[] = [
     width: 50,
     height: 50,
     year: 2024,
-    price: 27500,
+    price: 10000,
     status: "available",
     published: true,
     descriptions: {
@@ -69,7 +69,7 @@ export const seedArtworks: Artwork[] = [
     width: 50,
     height: 50,
     year: 2025,
-    price: 35000,
+    price: 10000,
     status: "available",
     published: true,
     descriptions: {
