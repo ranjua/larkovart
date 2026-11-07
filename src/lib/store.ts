@@ -7,19 +7,20 @@ let client: Client | undefined;
 let ready: Promise<void> | undefined;
 export function db() {
   if (!client) {
-    if (process.env.VERCEL && !process.env.DATABASE_URL)
+    const databaseUrl = process.env.DATABASE_URL || process.env.TURSO_DATABASE_URL;
+    if (process.env.VERCEL && !databaseUrl)
       throw new Error(
         "Configure an isolated development database for Vercel previews.",
       );
     if (
-      process.env.DATABASE_URL &&
+      databaseUrl &&
       process.env.DATABASE_ENVIRONMENT !== "development"
     )
       throw new Error("Only development databases are permitted.");
-    if (!process.env.DATABASE_URL) mkdirSync(".data", { recursive: true });
+    if (!databaseUrl) mkdirSync(".data", { recursive: true });
     client = createClient({
-      url: process.env.DATABASE_URL || "file:.data/studio.db",
-      authToken: process.env.DATABASE_AUTH_TOKEN,
+      url: databaseUrl || "file:.data/studio.db",
+      authToken: process.env.DATABASE_AUTH_TOKEN || process.env.TURSO_AUTH_TOKEN,
     });
   }
   return client;
