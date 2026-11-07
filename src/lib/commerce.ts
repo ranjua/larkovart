@@ -91,7 +91,7 @@ export async function startSandboxCheckout(
   );
   if (!service) throw new StoreError("shipping_quote_required", 422);
   await providers.payment.verifyEnvironment();
-  const appUrl = process.env.APP_URL;
+  const appUrl = process.env.APP_URL || (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : undefined);
   if (!appUrl || !/^https?:\/\//.test(appUrl))
     throw new StoreError("app_url_required", 503);
   const id = randomUUID();

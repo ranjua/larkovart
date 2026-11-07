@@ -7,7 +7,7 @@ const cell = (v: unknown) =>
     .replaceAll('"', '""') +
   '"';
 export async function GET() {
-  const origin = process.env.APP_URL;
+  const origin = process.env.APP_URL || (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : undefined);
   if (!origin || !/^https:\/\//.test(origin))
     return Response.json(
       { error: "canonical_https_url_required" },
