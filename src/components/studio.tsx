@@ -264,6 +264,7 @@ export function Studio({
             </label>
             <details className="packing-details">
               <summary>Packed dimensions & shipping allowance</summary>
+              {a.packingEstimate && <p className="fine-print">Planning estimate: {a.packingEstimate.length} × {a.packingEstimate.width} × {a.packingEstimate.height} cm, {a.packingEstimate.weight} kg. Assumes unframed canvas without glass. For preliminary quotes only; confirm measurements before booking.</p>}
               <p className="fine-print">
                 Use measured package sizes, not canvas sizes. Leave length blank
                 to require a manual quote.
