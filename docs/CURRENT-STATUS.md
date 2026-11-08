@@ -39,7 +39,10 @@ Orders and Add Artwork; payment/courier diagnostics are collapsed into settings.
 OTP emails now include a branded HTML design alongside the plain-text version.
 37 automated tests pass, plus browser checks for all three interiors, original
 preference, artwork proportions, admin login and all six locales on mobile.
-Deployment verification is recorded after publishing the update.
+Deployed and verified as `dpl_77E3fb2rxKXg9aZJDiYCVSKQzbKW` (commit `a0e5d73`).
+Hosted homepage, redesigned OTP login and the owner-uploaded Atitlan detail
+returned HTTP 200. The owner listing renders the original photo by default and
+all three room choices; rendered image tags do not use color-enhancement URLs.
 
 ## Delivery: paused at owner's request
 
