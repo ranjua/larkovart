@@ -12,7 +12,11 @@
     "typecheck": "tsc --noEmit",
     "test": "node --experimental-strip-types --test tests/*.test.ts",
     "integrations:check": "node --env-file-if-exists=.env.local scripts/check-integrations.mjs",
-    "integrations:register-webhook": "node --env-file-if-exists=.env.local scripts/register-sandbox-webhook.mjs"
+    "integrations:register-webhook": "node --env-file-if-exists=.env.local scripts/register-sandbox-webhook.mjs",
+    "social:check": "node --env-file-if-exists=.env.local --experimental-strip-types scripts/social-check-config.ts",
+    "social:migrate": "node --env-file-if-exists=.env.local --experimental-strip-types scripts/social-migrate.ts",
+    "social:worker": "node --env-file-if-exists=.env.local --experimental-strip-types scripts/social-worker.ts",
+    "social:rotate-keys": "node --env-file-if-exists=.env.local --experimental-strip-types scripts/social-rotate-keys.ts"
   },
   "dependencies": {
     "@libsql/client": "latest",

@@ -133,7 +133,7 @@ export default async function Home({
             <p>{t.artistBody2}</p>
             <a
               className="text-link"
-              href="https://www.instagram.com/yuliaartgt"
+              href="https://www.instagram.com/larkova.art/"
               target="_blank"
               rel="noreferrer"
             >

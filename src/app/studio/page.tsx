@@ -17,6 +17,7 @@ export default async function StudioPage() {
       <Link className="wordmark" href="/es">
         larkova<span>ARTIST STUDIO</span>
       </Link>
+      {authorized && <Link className="studio-social-link button" href="/studio/social">Social studio ↗</Link>}
       {authorized ? (
         <Studio
           works={await artworks(true)}

@@ -30,7 +30,7 @@ export default async function LocaleLayout({
           </Link>
           <p>{t.footer}</p>
           <a
-            href="https://www.instagram.com/yuliaartgt"
+            href="https://www.instagram.com/larkova.art/"
             target="_blank"
             rel="noreferrer"
           >

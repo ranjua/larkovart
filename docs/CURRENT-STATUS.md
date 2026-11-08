@@ -1,5 +1,25 @@
 # Current status — 2026-11-08
 
+## Social Studio — implementation, account setup pending
+
+The social suite is implemented at `/studio/social`, protected by existing email OTP.
+It includes shared artwork campaigns, independent platform versions, verified
+original media, exact-revision approval, inventory checks, calendar, durable jobs,
+pause/recovery controls, manual packages, OAuth, encrypted credentials and basic
+provider metrics. API adapters cover Instagram images/carousels/Reels, Facebook
+Page text/photos/multi-photo/short Reels, and Pinterest image/video Pins. TikTok
+uses manual/native packages because Direct Post excludes this private-tool use.
+Pinterest Trial results are creator-only tests, not public posts.
+
+No social developer app/account is configured or authorized. No live social read,
+provider write, post, message or paid service was performed. Public writes default
+off; worker defaults manual; no hosted social schedule is enabled. Preview uses
+only additive social tables on the guarded development DB; production requires
+explicit separate social storage and inventory setup without weakening commerce's
+guard. Setup: `docs/social/PLATFORM-SETUP.md`; operations/evidence:
+`docs/social/OPERATIONS.md`, `docs/social/VERIFICATION.md`.
+
+
 ## Admin authentication
 
 Admin authentication uses email OTP only for
