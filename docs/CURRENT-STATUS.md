@@ -11,7 +11,9 @@ Page text/photos/multi-photo/short Reels, and Pinterest image/video Pins. TikTok
 uses manual/native packages because Direct Post excludes this private-tool use.
 Pinterest Trial results are creator-only tests, not public posts.
 
-No social developer app/account is configured or authorized. No live social read,
+The shared OAuth origin and dedicated encrypted token key are provisioned only
+for the existing development branch Preview; public/test writes and hosted
+scheduling are explicitly disabled. No social developer app/account is configured or authorized. No live social read,
 provider write, post, message or paid service was performed. Public writes default
 off; worker defaults manual; no hosted social schedule is enabled. Preview uses
 only additive social tables on the guarded development DB; production requires

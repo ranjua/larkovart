@@ -61,4 +61,10 @@ https://nextjs.org/docs/app/api-reference/config/next-config-js/output
 
 ## Release evidence
 
-Pending final protected preview deployment and read-only hosted route checks. Local/full-flow evidence above must not be confused with live provider or hosted authenticated-account evidence.
+- Functional commit `30b4819` deployed successfully as `dpl_FBbim9DRySWaTqwFW8yCun1Z5Vpj`, protected Preview, Node 24, intended project/team verified. Branch alias: `https://larkovart-dev-git-dev-nextjs-art-store-juarerandy-7417.vercel.app`.
+- Initial `8cdf0b8` hosted build failed on Turbopack's dynamic module-relative public-file resolution. The packaging fix uses runtime-root paths and explicit output tracing. Rebuilt local traces contain all **five** original files for both Studio and cron worker routes; relevant 27 tests, typecheck/build and the full browser journey pass after the fix. Hosted Turbopack build now succeeds.
+- Read-only hosted checks using authenticated Vercel protected-deployment access: `/studio/social` resolves to existing OTP login (200); private `/api/studio/social/status` denies unauthenticated access (403); `/social/privacy` renders (200); `/api/cron/social` denies missing worker authorization (401); invalid OAuth state returns safe reconnect guidance; unconfigured Meta webhook returns 503; unknown deletion confirmation returns 404. Protection was not disabled.
+- Shared configuration was then provisioned **only for Preview + git branch `dev/nextjs-art-store`**: canonical SOCIAL_ORIGIN, dedicated encrypted SOCIAL_TOKEN_KEY_V1/active version, environment/enable/manual mode, explicit false public/test write/public-store/hosted-scheduler gates. No provider credentials or production keys were copied. A fresh deployment is required to use the new shared settings and is recorded below when ready.
+- Hosted authenticated draft/export/valid OAuth was not exercised: that requires the owner's real Studio OTP and social consent. No login bypass or real-email request was used. Local browser fixtures exercise the full authenticated flow; they are not evidence of an authorized live account.
+
+No provider write test is authorized or claimed. The complete account/permission/read/test/public-write matrix above remains unchanged.

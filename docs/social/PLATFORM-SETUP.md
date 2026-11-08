@@ -10,6 +10,16 @@ Manual drafting/export is available at `/studio/social` using the existing email
 
 The developer-app creation, consent and review steps require the account owner. They cannot be completed by inventing credentials or reusing the Studio OTP.
 
+## Prepared automatically for the preview
+
+The existing `dev/nextjs-art-store` preview branch now has its canonical callback
+origin, a dedicated encrypted social key, active key version, manual worker mode,
+and explicit false public/test-write, public-store and hosted-scheduler gates.
+No provider app secret, access token or production/development key was added.
+You only need the provider's developer-app settings and consent steps above.
+Do not replace the encryption key after accounts connect; use the rotation
+procedure when changing keys.
+
 ## Shared server configuration
 
 - `SOCIAL_ORIGIN`: canonical HTTPS Studio origin; exact allowlisted callback origin, no trailing path. The current protected branch preview is `https://larkovart-dev-git-dev-nextjs-art-store-juarerandy-7417.vercel.app`.
