@@ -1,32 +1,45 @@
-# Current status — 2026-11-07
+# Current status — 2026-11-08
 
 ## Admin authentication
 
 Admin authentication uses email OTP only for
 `larkova.art@gmail.com`. Password login and old password cookies are rejected;
 short-lived browser-bound codes, persistent throttling and revocable sessions
-are implemented. All 35 automated tests, the build and browser OTP/publishing checks pass. The OTP
+are implemented. All 37 automated tests, the build and browser OTP/publishing checks pass. The OTP
 login page is deployed and verified on Vercel Preview. `RESEND_API_KEY` is now
 configured for Preview, Production and Development. Preview was redeployed as
 `dpl_7bp4B26DGrri5mmnjSLzGx2TYSWb`; a real OTP request returned HTTP 200, Resend
 accepted the admin-email message and the browser-bound challenge cookie was set.
-Inbox receipt and the owner's real login remain owner-confirmed steps, not inferred
-from API acceptance. The test code was not used to create an admin session.
+The owner confirmed that email OTP login works on November 8. The test code was not used to create an admin session.
 Instructions: `docs/ADMIN-LOGIN.md`.
 Cloudinary variables were confirmed present in all three Vercel environments;
 Cloudinary account authentication, original storage and an AI-enhanced test image
 were verified in deployment `dpl_5ZNCf3xY7EMpirhb5VVL1vkuygRQ`. The reusable test
 asset was not published to the catalog; no inventory or customer data changed.
 
-## Photo enhancement and publishing
+## Original photos, realistic rooms and visual redesign
 
-Private `/studio` now includes simplified photo upload, USD 100 default price,
-automatic factual descriptions in six languages and publishing checked by default.
-Cloudinary signed direct uploads, AI exposure/color enhancement, original-photo
-preservation and provider receipt verification are implemented. Cloudinary
-variables are configured in Preview, Production and Development. Account authentication and real AI enhancement were verified in the deployment
-check. Original uploads remain available
-when enhancement is disconnected. Setup/cost details: `docs/PHOTO-ENHANCEMENT.md`.
+The original photo is now the default in gallery cards, artwork detail, checkout,
+admin thumbnails and Meta feed. Existing listings use their preserved original;
+no catalog migration, inventory reset or image deletion is required.
+New signed Cloudinary uploads no longer request color enhancement or eager AI
+processing. The original upload is verified before publication.
+
+Three built-in-imagegen photographic interiors are saved in `public/rooms/`.
+The browser composites the actual artwork photo over them, preserving its aspect
+ratio and using entered dimensions for approximate scale. There is no recurring
+per-artwork room generation charge. The product viewer defaults to original and
+provides three room choices with a clear illustrative-room/scale disclosure.
+Sculptures retain their original photograph; they are not misrepresented as wall
+paintings. Asset provenance and full prompts: `docs/ROOM-ASSETS.md`.
+
+Storefront, responsive layout, gallery, artwork viewer, checkout styles, OTP
+login and admin have a new sans-serif visual design. Admin separates Collection,
+Orders and Add Artwork; payment/courier diagnostics are collapsed into settings.
+OTP emails now include a branded HTML design alongside the plain-text version.
+37 automated tests pass, plus browser checks for all three interiors, original
+preference, artwork proportions, admin login and all six locales on mobile.
+Deployment verification is recorded after publishing the update.
 
 ## Delivery: paused at owner's request
 

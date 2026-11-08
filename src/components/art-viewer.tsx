@@ -1,60 +1,90 @@
 "use client";
 import Image from "next/image";
 import { useState } from "react";
+import { Expand, ImageIcon, Layers3 } from "lucide-react";
 import { dictionaries, type Locale } from "@/lib/i18n";
-import type { Artwork } from "@/lib/catalog";
+import { artworkPhoto, type Artwork } from "@/lib/catalog";
+import { RoomScene, roomNames, roomScenes } from "./room-scene";
 export function ArtViewer({ art, locale }: { art: Artwork; locale: Locale }) {
   const [room, setRoom] = useState(false);
+  const [scene, setScene] = useState(0);
   const t = dictionaries[locale];
   return (
-    <div>
-      <div className={room ? "detail-image room-scene" : "detail-image"}>
-        <Image
-          src={art.image}
-          alt={art.title}
-          width={1100}
-          height={1100}
-          priority
-          sizes="(max-width: 800px) 90vw, 55vw"
-        />
-        {room && <div className="room-bench" aria-hidden="true" />}
+    <div className="art-viewer">
+      <div className="viewer-toolbar">
+        <div className="viewer-controls">
+          <button
+            aria-pressed={!room}
+            className={!room ? "active" : ""}
+            onClick={() => setRoom(false)}
+          >
+            <ImageIcon size={15} />
+            {t.photo}
+          </button>
+          {art.category !== "sculptures" && (
+            <button
+              aria-pressed={room}
+              className={room ? "active" : ""}
+              onClick={() => setRoom(true)}
+            >
+              <Layers3 size={15} />
+              {t.room}
+            </button>
+          )}
+        </div>
+        <span className="viewer-index">
+          {room ? `0${scene + 2}` : "01"} /{" "}
+          {art.category === "sculptures" ? "01" : "04"}
+        </span>
       </div>
-      <div className="viewer-controls">
-        <button
-          aria-pressed={!room}
-          className={!room ? "active" : ""}
-          onClick={() => setRoom(false)}
-        >
-          {t.photo}
-        </button>
-        <button
-          aria-pressed={room}
-          className={room ? "active" : ""}
-          onClick={() => setRoom(true)}
-        >
-          {t.room}
-        </button>
-      </div>
-      {art.originalImage && (
-        <a
-          className="fine-print"
-          href={art.originalImage}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          {
-            {
-              es: "Ver foto original sin retoques",
-              en: "View original, unedited photo",
-              ru: "Исходная фотография без обработки",
-              zh: "查看未经处理的原始照片",
-              ja: "未加工の元写真を見る",
-              pt: "Ver foto original sem edição",
-            }[locale]
-          }
-        </a>
+      {room ? (
+        <RoomScene art={art} scene={scene} locale={locale} />
+      ) : (
+        <div className="detail-image original-photo">
+          <Image
+            src={artworkPhoto(art)}
+            alt={art.title}
+            width={1100}
+            height={1100}
+            priority
+            sizes="(max-width: 800px) 95vw, 60vw"
+          />
+          <a
+            className="photo-expand"
+            href={artworkPhoto(art)}
+            target="_blank"
+            rel="noopener noreferrer"
+            aria-label={t.photo}
+          >
+            <Expand size={19} />
+          </a>
+        </div>
       )}
-      {room && <p className="fine-print">{t.roomNote}</p>}
+      {art.category !== "sculptures" && (
+        <div className="scene-options" aria-label={t.room}>
+          {roomScenes.map((r, i) => (
+            <button
+              key={r.id}
+              onClick={() => {
+                setScene(i);
+                setRoom(true);
+              }}
+              aria-pressed={room && scene === i}
+              className={room && scene === i ? "selected" : ""}
+            >
+              <Image
+                src={r.file}
+                alt=""
+                width={240}
+                height={160}
+                sizes="(max-width: 800px) 30vw, 18vw"
+              />
+              <span>{roomNames[locale][i]}</span>
+            </button>
+          ))}
+        </div>
+      )}
+      {room && <p className="fine-print scene-disclosure">{t.roomNote}</p>}
     </div>
   );
 }

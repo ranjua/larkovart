@@ -1,5 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
+import { artworkPhoto } from "../src/lib/catalog.ts";
 import {
   photoConfigured,
   photoSignature,
@@ -31,7 +32,7 @@ test("photo receipts reject forged uploads and URLs outside our cloud", () => {
     const urls = photoUrls(receipt);
     assert.ok(isPhotoUrl(urls.image));
     assert.ok(isPhotoUrl(urls.originalImage));
-    assert.ok(urls.image.includes("e_enhance"));
+    assert.equal(urls.image, urls.originalImage);
     assert.ok(!urls.originalImage.includes("e_enhance"));
     assert.throws(() => photoUrls({ ...receipt, version: 124 }));
     assert.throws(() => photoUrls({ ...receipt, public_id: "other/asset" }));
@@ -51,4 +52,15 @@ test("photo receipts reject forged uploads and URLs outside our cloud", () => {
       else process.env[k] = previous[i];
     });
   }
+});
+
+test("existing enhanced listings display their preserved original everywhere", () => {
+  assert.equal(
+    artworkPhoto({ image: "enhanced.jpg", originalImage: "original.jpg" }),
+    "original.jpg",
+  );
+  assert.equal(
+    artworkPhoto({ image: "/artworks/Atitlan.jpg" }),
+    "/artworks/Atitlan.jpg",
+  );
 });

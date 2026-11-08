@@ -1,23 +1,17 @@
 // Safe deployment check: one reusable test asset, never added to the art catalog.
 import { readFile } from "node:fs/promises";
-import {
-  photoConfigured,
-  photoSignature,
-  PHOTO_EFFECT,
-} from "../src/lib/photo.ts";
+import { photoConfigured, photoSignature } from "../src/lib/photo.ts";
 const keys = [
   "CLOUDINARY_CLOUD_NAME",
   "CLOUDINARY_API_KEY",
   "CLOUDINARY_API_SECRET",
 ];
 if (!keys.some((key) => process.env[key])) {
-  console.log("Photo enhancement: not configured.");
+  console.log("Photo storage: not configured.");
   process.exit(0);
 }
 if (!photoConfigured()) {
-  console.error(
-    "Photo enhancement: incomplete credentials or invalid cloud name.",
-  );
+  console.error("Photo storage: incomplete credentials or invalid cloud name.");
   process.exit(1);
 }
 try {
@@ -38,7 +32,6 @@ try {
       public_id: publicId,
       overwrite: "false",
       timestamp: String(Math.floor(Date.now() / 1000)),
-      eager: PHOTO_EFFECT,
     };
     const form = new FormData();
     Object.entries(params).forEach(([key, value]) => form.set(key, value));
@@ -59,27 +52,26 @@ try {
       redirect: "error",
     });
     if (!result.ok)
-      throw new Error(`test enhancement returned HTTP ${result.status}`);
+      throw new Error(`test upload returned HTTP ${result.status}`);
     const asset = await result.json();
-    if (!asset.eager?.[0]?.secure_url)
-      throw new Error("processed test photo not ready");
+    if (!asset.secure_url) throw new Error("original test photo not ready");
   }
   const processed = await fetch(
-    `https://res.cloudinary.com/${cloud}/image/upload/${PHOTO_EFFECT}/${publicId}.jpg`,
+    `https://res.cloudinary.com/${cloud}/image/upload/${publicId}.jpg`,
     { method: "HEAD", signal: AbortSignal.timeout(30000), redirect: "error" },
   );
   if (
     !processed.ok ||
     !processed.headers.get("content-type")?.startsWith("image/")
   )
-    throw new Error(`processed photo returned HTTP ${processed.status}`);
+    throw new Error(`original photo returned HTTP ${processed.status}`);
   console.log(
-    "Photo enhancement: account authenticated; original stored; AI-enhanced test image verified. Catalog unchanged.",
+    "Photo storage: account authenticated; original photo storage verified. Catalog unchanged.",
   );
 } catch (error) {
   // Only our fixed messages/status codes are emitted; never provider bodies or credentials.
   console.error(
-    `Photo enhancement: ${error instanceof Error && !error.message.includes("fetch") ? error.message : "connection failed"}.`,
+    `Photo storage: ${error instanceof Error && !error.message.includes("fetch") ? error.message : "connection failed"}.`,
   );
   process.exitCode = 1;
 }

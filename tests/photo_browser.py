@@ -32,6 +32,7 @@ with tempfile.TemporaryDirectory(prefix='larkovart-photo-') as directory:
                 assert page.request.post(BASE+'/api/studio/session', data={'action':'request'}, headers={'Origin':BASE}).status == 429
                 page.get_by_label('Email sign-in code').fill(email['code'])
                 page.get_by_role('button',name='Verify code').click()
+                page.get_by_role('button',name='Add artwork').click()
                 expect(page.locator('.studio-draft')).to_be_visible()
                 assert page.request.post(BASE+'/api/studio/photo',headers={'Origin':BASE}).status == 503
                 form=page.locator('.studio-draft')

@@ -4,7 +4,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { ArrowUpRight, Check, Package } from "lucide-react";
 import { dictionaries, money, type Locale } from "@/lib/i18n";
-import type { Artwork } from "@/lib/catalog";
+import { artworkPhoto, type Artwork } from "@/lib/catalog";
 import type { CountryOption } from "@/lib/countries";
 import { paymentCopy } from "@/lib/payment-copy";
 export function Checkout({
@@ -197,7 +197,7 @@ export function Checkout({
       </div>
       <aside className="order-summary">
         <Image
-          src={art.image}
+          src={artworkPhoto(art)}
           alt={art.title}
           width={650}
           height={650}

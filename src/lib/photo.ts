@@ -1,6 +1,5 @@
 import { createHash, timingSafeEqual } from "node:crypto";
 
-export const PHOTO_EFFECT = "e_enhance/c_limit,w_2400/f_jpg,q_90";
 export function photoConfigured() {
   return (
     /^[a-z0-9_-]+$/.test(process.env.CLOUDINARY_CLOUD_NAME || "") &&
@@ -43,7 +42,7 @@ export function photoUrls(receipt: {
   const asset = `v${receipt.version}/${receipt.public_id}`;
   return {
     originalImage: base + asset,
-    image: base + PHOTO_EFFECT + "/" + asset + ".jpg",
+    image: base + asset,
   };
 }
 export function isPhotoUrl(value: string) {

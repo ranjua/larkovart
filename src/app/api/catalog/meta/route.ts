@@ -1,4 +1,5 @@
 import { artworks } from "@/lib/store";
+import { artworkPhoto } from "@/lib/catalog";
 export const dynamic = "force-dynamic";
 const cell = (v: unknown) =>
   '"' +
@@ -7,7 +8,9 @@ const cell = (v: unknown) =>
     .replaceAll('"', '""') +
   '"';
 export async function GET() {
-  const origin = process.env.APP_URL || (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : undefined);
+  const origin =
+    process.env.APP_URL ||
+    (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : undefined);
   if (!origin || !/^https:\/\//.test(origin))
     return Response.json(
       { error: "canonical_https_url_required" },
@@ -36,7 +39,7 @@ export async function GET() {
       "new",
       (a.price / 100).toFixed(2) + " USD",
       base + "/es/art/" + encodeURIComponent(a.id),
-      base + a.image,
+      new URL(artworkPhoto(a), base).href,
       "Larkova Art",
       a.status === "available" ? 1 : 0,
     ]),

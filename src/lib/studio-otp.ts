@@ -6,6 +6,7 @@ import {
   timingSafeEqual,
 } from "node:crypto";
 import { db } from "./store.ts";
+import { studioEmailHtml } from "./studio-email.ts";
 
 export const ADMIN_EMAIL = "larkova.art@gmail.com";
 export const OTP_LIFETIME = 10 * 60 * 1000;
@@ -114,6 +115,7 @@ export async function requestStudioCode(
           "Larkova Art <onboarding@resend.dev>",
         to: [ADMIN_EMAIL],
         subject: "Your Larkova Art sign-in code",
+        html: studioEmailHtml(code, scope.slice(scope.indexOf(":") + 1)),
         text: `Your Larkova Art admin sign-in code is ${code}.\n\nIt expires in 10 minutes and works once, in the browser where you requested it.\nSign-in site: ${scope.slice(scope.indexOf(":") + 1)}\n\nNever share this code. If you did not request it, ignore this email.`,
       }),
     });

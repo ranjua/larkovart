@@ -78,7 +78,7 @@ def run():
                     expect(page.get_by_label('Email sign-in code')).to_be_visible()
                     page.get_by_label('Email sign-in code').fill(__import__('json').loads((Path(directory)/'email.json').read_text())['code'])
                     page.get_by_role('button',name='Verify code').click()
-                    expect(page.get_by_role('heading',name='Good things are taking shape.')).to_be_visible()
+                    expect(page.get_by_role('heading',name='Your studio.')).to_be_visible()
                     # A test quote is recorded and leaves the original available.
                     page.goto(BASE+'/en/checkout/mar',wait_until='networkidle')
                     page.get_by_label('Full name').fill('Test Collector')
@@ -103,6 +103,7 @@ def run():
                     page.goto(BASE+'/en/art/gato',wait_until='networkidle')
                     expect(page.get_by_text('This original is no longer available.')).to_be_visible()
                     page.goto(BASE+'/studio',wait_until='networkidle')
+                    page.get_by_role('button',name='Orders').click()
                     expect(page.locator('.studio-order')).to_have_count(2)
                     assert not errors, errors
                     browser.close()

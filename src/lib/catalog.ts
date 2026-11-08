@@ -17,6 +17,10 @@ export type Artwork = {
   published: boolean;
   descriptions: Record<Locale, string>;
 };
+// Prefer the unaltered upload, including for listings created before original-first display.
+export function artworkPhoto(art: Pick<Artwork, "image" | "originalImage">) {
+  return art.originalImage || art.image;
+}
 // Owner confirmed USD 100 including shipping for Atitlan, Gato and Mar2.
 // Sold works retain archived sold status; their display prices are illustrative.
 export const seedArtworks: Artwork[] = [

@@ -13,7 +13,7 @@ export async function POST(request: Request) {
     if (input.photoReceipt) {
       try {
         const urls = photoUrls(input.photoReceipt);
-        // The synchronous eager upload must finish successfully before publication.
+        // Verify the original upload exists before publication.
         const ready = await fetch(urls.image, {
           method: "HEAD",
           signal: AbortSignal.timeout(15000),
@@ -29,7 +29,7 @@ export async function POST(request: Request) {
         return Response.json(
           {
             error:
-              "Photo enhancement has not completed. Nothing was published; try again.",
+              "The original photo could not be verified. Nothing was published; try again.",
           },
           { status: 422 },
         );

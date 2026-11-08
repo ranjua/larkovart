@@ -4,7 +4,12 @@ import Link from "next/link";
 import { ArrowUpRight } from "lucide-react";
 import { useState } from "react";
 import { dictionaries, money, type Locale } from "@/lib/i18n";
-import { mediumName, type Artwork, type Category } from "@/lib/catalog";
+import {
+  artworkPhoto,
+  mediumName,
+  type Artwork,
+  type Category,
+} from "@/lib/catalog";
 export function ArtGrid({
   works,
   locale,
@@ -53,7 +58,7 @@ export function ArtGrid({
                 aria-label={`${t.view}: ${a.title}`}
               >
                 <Image
-                  src={a.image}
+                  src={artworkPhoto(a)}
                   alt={a.title}
                   width={850}
                   height={850}
