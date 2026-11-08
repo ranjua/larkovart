@@ -1,3 +1,4 @@
+import { join } from "node:path";
 import { readFile } from "node:fs/promises";
 import { randomUUID, timingSafeEqual } from "node:crypto";
 import { artworkPhoto } from "../catalog.ts";
@@ -151,7 +152,7 @@ export async function boundedMedia(
 export async function assetBytes(asset: Asset, fetcher: typeof fetch = fetch) {
   let b: Buffer;
   if (/^\/artworks\/[\w-]+\.(jpg|jpeg|png|webp)$/.test(asset.url))
-    b = await readFile(new URL(`../../../public${asset.url}`, import.meta.url));
+    b = await readFile(join(process.cwd(), "public", asset.url));
   else if (
     /^data:image\/(jpeg|png|webp);base64,[A-Za-z0-9+/]+=*$/.test(asset.url)
   )
@@ -182,7 +183,7 @@ export async function importArtwork(
   let b: Buffer,
     apiReady = false;
   if (/^\/artworks\/[\w-]+\.(jpg|jpeg|png|webp)$/.test(source))
-    b = await readFile(new URL(`../../../public${source}`, import.meta.url));
+    b = await readFile(join(process.cwd(), "public", source));
   else if (/^data:image\/(jpeg|png|webp);base64,[A-Za-z0-9+/]+=*$/.test(source))
     b = Buffer.from(source.split(",")[1], "base64");
   else {

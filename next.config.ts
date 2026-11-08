@@ -15,6 +15,10 @@ const config: NextConfig = {
         ]
       : [],
   },
+  outputFileTracingIncludes: {
+    "/api/studio/social/**": ["./public/artworks/**/*"],
+    "/api/cron/social": ["./public/artworks/**/*"],
+  },
   serverExternalPackages: ["@libsql/client"],
   async headers() {
     return [

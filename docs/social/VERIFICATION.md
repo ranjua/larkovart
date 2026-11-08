@@ -50,6 +50,15 @@ The connected team metadata did not expose a hosting plan. Manual mode is defaul
 
 Remaining owner-only actions are in PLATFORM-SETUP.md: first create/select the Instagram Login app, register the exact callback, save its app credentials privately, authorize @larkova.art and confirm its immutable account ID. Other account/Page/board selections and provider reviews remain separate. Protected preview URLs do not satisfy a public buyer destination or app-review privacy-domain requirement. Production writing remains off until isolated storage/inventory/public-origin/account/test authorization are verified.
 
+## Deployment packaging
+
+A final packaging review found module-relative filesystem URLs could refer to the
+build workspace after serverless deployment. Local artwork reads now resolve
+from the runtime project root, and Next output tracing explicitly includes
+`public/artworks` for the social Studio and worker routes. Bundle trace contents
+are checked after rebuilding. Reference:
+https://nextjs.org/docs/app/api-reference/config/next-config-js/output
+
 ## Release evidence
 
 Pending final protected preview deployment and read-only hosted route checks. Local/full-flow evidence above must not be confused with live provider or hosted authenticated-account evidence.
