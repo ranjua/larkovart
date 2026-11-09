@@ -21,9 +21,14 @@ motion, room scenes and inventory states. These are fixture tests, not evidence
 of real Google consent or customer email delivery.
 
 A dedicated customer auth secret and canonical origin are provisioned only for
-`dev/nextjs-art-store` Preview. **Customer login activation still requires a
-verified Resend sender (`CUSTOMER_EMAIL_FROM`) and Google OAuth client credentials.**
-Unavailable methods stay disabled. No real customer accounts, emails, payments,
+`dev/nextjs-art-store` Preview. **Google OAuth credentials are now configured in Preview.** Redeployment
+`dpl_Df8rhEdBesrYJZF51rh8BvRpRwq3` is READY (`f07efb7`). Hosted browser checks
+confirmed the Google button is enabled, OAuth initiation succeeds with the
+correct callback/state/PKCE, and Google displays its sign-in prompt without a
+configuration error. No Google credentials or consent were submitted; the owner
+must complete the first login to verify the callback and customer session.
+Email/password and customer OTP still require a verified Resend sender
+(`CUSTOMER_EMAIL_FROM`) and remain disabled until configured. No real customer accounts, emails, payments,
 shipments, social posts or paid services were created during verification.
 Delivery setup remains paused. Setup and limitations: `docs/CUSTOMER-ACCOUNTS.md`.
 

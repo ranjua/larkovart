@@ -16,7 +16,19 @@ A cart can hold multiple works, but each original uses the existing separate
 checkout and destination confirmation. A combined multi-artwork payment is not
 implemented. Current price and availability are checked again by checkout.
 
-## Owner setup — two remaining connections
+## Current Preview connection status
+
+Google client credentials are configured in Preview. Deployment
+`dpl_Df8rhEdBesrYJZF51rh8BvRpRwq3` is READY on functional commit `f07efb7`.
+A protected browser check confirmed Google is enabled, the sign-in endpoint
+returns HTTP 200, the callback matches the canonical branch origin, state/PKCE
+are present, and Google displays its sign-in prompt without a configuration
+error. No Google password or consent was submitted and no customer account was
+created. The owner must complete the first Google login to verify the return
+and customer session. Email/password and customer OTP remain disabled pending
+`CUSTOMER_EMAIL_FROM` on a verified Resend domain.
+
+## Setup reference — email sender remains pending
 
 1. **Email:** in Resend, verify a sending domain you control. Set Vercel Preview
    `CUSTOMER_EMAIL_FROM` to a sender on that domain. The existing server-side
