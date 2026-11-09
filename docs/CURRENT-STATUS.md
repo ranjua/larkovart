@@ -1,4 +1,4 @@
-# Current status — 2026-11-08
+# Current status — 2026-11-09
 
 ## Public storefront exhibition-catalogue redesign — 2026-11-09
 
@@ -16,7 +16,9 @@ keyboard/touch, reduced motion, no JavaScript, artwork states, checkout, OTP/pho
 publishing and Social Studio pass. Isolated mobile lab median LCP~1.06s, CLS0.045;
 these are not field metrics. Screenshots, recordings and evidence:
 `docs/REDESIGN-VERIFICATION.md`. This is a protected Preview release, not a live
-commerce launch. Delivery configuration remains paused.
+commerce launch. Deployed and route-verified as
+`dpl_5QkPRPhTNLWGvbqxegw8Wsj9njVz` (functional commit `73f4c95`).
+Delivery configuration remains paused.
 
 
 ## Social Studio — implementation, account setup pending

@@ -39,4 +39,8 @@ No live payment, shipping, social post, real email or production commerce launch
 
 ## Release
 
-Target verified: existing `larkovart-dev` project (`prj_ASePEocpNrBuQP3vPOhBg4lVC58K`) in team `team_Q9eV1iiGwCtird9GCFOlALeK`, Node24, protected Preview branch `dev/nextjs-art-store`. Deployment evidence is appended after the hosted build and read-only checks.
+Target verified: existing `larkovart-dev` project (`prj_ASePEocpNrBuQP3vPOhBg4lVC58K`) in team `team_Q9eV1iiGwCtird9GCFOlALeK`, Node24, protected Preview branch `dev/nextjs-art-store`. Functional commit `73f4c95` deployed READY as `dpl_5QkPRPhTNLWGvbqxegw8Wsj9njVz` using the hosted Turbopack build. Immutable preview: `https://larkovart-1ca6c38h3-juarerandy-7417.vercel.app`; normal branch alias remains `https://larkovart-dev-git-dev-nextjs-art-store-juarerandy-7417.vercel.app`.
+
+Read-only protected-deployment checks pass: all six locale homepages return200 and render the new original-led hero/storefront; `/en/art/atitlan` returns200 with the original viewer; existing checkout returns200; self-hosted font returns200. `/studio` and `/studio/social` resolve to the existing OTP page, and unauthenticated private Social status returns403. These are hosted route/render checks; complete browser interactions, screenshots, motion and transactional regressions were verified against isolated local data. No owner OTP request/bypass or customer/provider write was used for hosted verification.
+
+Only this task's presentation, font, test and verification files were committed. Existing business/social/marketing/planning modifications remain in the working tree. Production was not promoted and delivery configuration remains paused.

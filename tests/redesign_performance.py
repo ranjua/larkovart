@@ -3,7 +3,7 @@ import os,subprocess,tempfile,time,signal,json
 from pathlib import Path
 from urllib.request import urlopen
 from playwright.sync_api import sync_playwright,expect
-root=Path(__file__).resolve().parents[1];out=Path('/tmp/larkova-redesign')
+root=Path(__file__).resolve().parents[1];out=Path('/tmp/larkova-redesign');out.mkdir(parents=True,exist_ok=True)
 with tempfile.TemporaryDirectory(prefix='larkova-redesign-perf-') as d:
  with open(out/'performance-server.log','w') as log:
   server=subprocess.Popen(['npm','run','start','--','--port','3209'],cwd=root,env={**os.environ,'DATABASE_URL':f'file:{d}/db','DATABASE_ENVIRONMENT':'development'},stdout=log,stderr=log,start_new_session=True)
@@ -29,4 +29,4 @@ with tempfile.TemporaryDirectory(prefix='larkova-redesign-perf-') as d:
     expect(page.locator('.fine-print[role=status]')).to_contain_text('Room preview unavailable')
     expect(page.locator('.original-photo.is-visible')).to_be_visible()
     c.close();b.close();print(json.dumps(metrics,indent=2));print('PASS: blocked room images show an honest error while the original remains visible.')
-  finally:os.killpg(server.pid,signal.SIGTERM);server.wait(timeout=20)
+  finally:server.terminate();server.wait(timeout=20)
