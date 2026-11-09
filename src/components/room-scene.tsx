@@ -20,11 +20,15 @@ export function RoomScene({
   scene = 0,
   locale,
   priority = false,
+  onReady,
+  onError,
 }: {
   art: Artwork;
   scene?: number;
   locale: Locale;
   priority?: boolean;
+  onReady?: () => void;
+  onError?: () => void;
 }) {
   const index = Math.min(2, Math.max(0, scene));
   const room = roomScenes[index];
@@ -38,6 +42,8 @@ export function RoomScene({
     <div className="room-scene" data-scene={room.id}>
       <Image
         className="room-background"
+        onLoad={onReady}
+        onError={onError}
         src={room.file}
         alt={roomNames[locale][index]}
         width={1536}

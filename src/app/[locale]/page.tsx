@@ -8,11 +8,13 @@ import {
   Fingerprint,
   Earth,
 } from "lucide-react";
-import { dictionaries, isLocale } from "@/lib/i18n";
+import { dictionaries, isLocale, money } from "@/lib/i18n";
 import { artworks } from "@/lib/store";
 import { ArtGrid } from "@/components/art-grid";
-import { RoomScene } from "@/components/room-scene";
-import { artworkPhoto } from "@/lib/catalog";
+import { HeroContext } from "@/components/hero-context";
+import { GalleryMotion } from "@/components/gallery-motion";
+import { galleryCopy } from "@/lib/gallery-copy";
+import { artworkPhoto, mediumName } from "@/lib/catalog";
 export const dynamic = "force-dynamic";
 export async function generateMetadata({
   params,
@@ -32,25 +34,29 @@ export default async function Home({
   if (!isLocale(locale)) notFound();
   const t = dictionaries[locale];
   const works = await artworks();
+  const eligible = works.filter(
+    (a) => a.status === "available" && a.category !== "sculptures",
+  );
   const featured =
-    [...works]
-      .reverse()
-      .find((a) => a.status === "available" && a.category !== "sculptures") ||
+    eligible.find((a) => a.id === "atitlan") ||
+    eligible[0] ||
+    works.find((a) => a.status === "available") ||
     works[0];
   return (
     <>
+      <GalleryMotion />
       <section className="hero section-wrap">
         <div className="hero-copy">
-          <p className="eyebrow">
+          <p className="eyebrow" data-hero-enter>
             <span className="status-dot" />
             {t.eyebrow}
           </p>
-          <h1>
-            {t.hero1}
-            <br />
-            <em>{t.hero2}</em>
+          <h1 data-hero-enter>
+            <span>{t.hero1}</span> <em>{t.hero2}</em>
           </h1>
-          <p className="hero-intro">{t.intro}</p>
+          <p className="hero-intro" data-hero-enter>
+            {t.intro}
+          </p>
           <Link className="button button-dark" href={`/${locale}#collection`}>
             {t.explore}
             <ArrowUpRight size={19} />
@@ -62,35 +68,52 @@ export default async function Home({
           </div>
         </div>
         {featured && (
-          <div className="hero-visual">
+          <figure className="hero-visual" data-depth data-hero-enter>
+            <span className="hero-decoration" aria-hidden="true" />
+            <div className="hero-art-topline">
+              <span>{t.selected}</span>
+              <span aria-hidden="true">01 / L</span>
+            </div>
             <Link
               href={`/${locale}/art/${featured.id}`}
-              className="hero-scene-link"
+              className="hero-original"
               aria-label={`${t.view}: ${featured.title}`}
             >
-              <RoomScene art={featured} locale={locale} priority />
-              <div className="hero-art-label">
-                <span>{featured.title}</span>
-                <span>
-                  {featured.width} × {featured.height} cm{" "}
-                  <ArrowUpRight size={17} />
-                </span>
-              </div>
-            </Link>
-            <div className="hero-original-card">
               <Image
                 src={artworkPhoto(featured)}
                 alt={featured.title}
-                width={160}
-                height={160}
-                sizes="90px"
+                width={900}
+                height={900}
+                sizes="(max-width: 700px) 90vw, (max-width: 1100px) 55vw, 650px"
+                priority
               />
+              <span className="hero-image-action">
+                <ArrowUpRight size={24} />
+              </span>
+            </Link>
+            <figcaption className="hero-art-label">
               <div>
-                <span>{t.edition}</span>
-                <strong>{t.original}</strong>
+                <strong>{featured.title}</strong>
+                <span>
+                  {mediumName(featured, locale)} · {featured.width} ×{" "}
+                  {featured.height} cm
+                </span>
               </div>
+              <div>
+                <span>{t[featured.status]}</span>
+                {featured.status === "available" && (
+                  <strong>{money(featured.price, locale)}</strong>
+                )}
+              </div>
+            </figcaption>
+            <div className="hero-provenance">
+              <span>{t.edition}</span>
+              <span>{t.original}</span>
             </div>
-          </div>
+            {featured.category !== "sculptures" && (
+              <HeroContext art={featured} locale={locale} />
+            )}
+          </figure>
         )}
       </section>
       <div className="studio-strip">
@@ -106,6 +129,9 @@ export default async function Home({
       </div>
       <section id="collection" className="collection section-wrap">
         <div className="section-heading">
+          <span className="section-number" aria-hidden="true">
+            01
+          </span>
           <div>
             <p className="eyebrow">{t.selected}</p>
             <h2>{t.collectionTitle}</h2>
@@ -116,17 +142,23 @@ export default async function Home({
       </section>
       <section id="artist" className="artist-section">
         <div className="section-wrap artist-grid">
-          <div className="artist-image">
+          <div className="artist-image" data-section-enter>
             <Image
               src="/artist.jpg"
-              alt="Artwork in Yulia Larkova’s studio"
+              alt={galleryCopy[locale].studioPhoto}
               width={750}
               height={900}
               sizes="(max-width: 800px) 90vw, 40vw"
             />
-            <span className="artist-signature">Yulia Larkova</span>
+            <div className="artist-photo-caption">
+              <span>Yulia Larkova</span>
+              <span>{galleryCopy[locale].studioPhoto}</span>
+            </div>
           </div>
           <div className="artist-copy">
+            <span className="section-number" aria-hidden="true">
+              02 / L
+            </span>
             <p className="eyebrow">{t.artistEyebrow}</p>
             <h2>{t.artistTitle}</h2>
             <p>{t.artistBody}</p>
@@ -144,6 +176,9 @@ export default async function Home({
         </div>
       </section>
       <section id="delivery" className="delivery section-wrap">
+        <span className="section-number" aria-hidden="true">
+          03
+        </span>
         <p className="eyebrow">{t.deliveryEyebrow}</p>
         <h2>{t.deliveryTitle}</h2>
         <div className="delivery-grid">

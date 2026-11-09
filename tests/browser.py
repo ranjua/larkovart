@@ -65,9 +65,9 @@ def run():
                     page.goto(BASE+'/en', wait_until='networkidle')
                     page.screenshot(path='/tmp/larkovart-mobile.png', full_page=True)
                     page.get_by_role('button', name='Open menu').click()
-                    expect(page.locator('.main-nav')).to_be_visible()
-                    page.locator('.main-nav').get_by_text('The collection',exact=True).click()
-                    expect(page.get_by_role('button',name='Open menu')).to_have_attribute('aria-expanded','false')
+                    expect(page.locator('.mobile-nav')).to_be_visible()
+                    page.locator('.mobile-nav').get_by_text('The collection',exact=True).click()
+                    expect(page.locator('.mobile-menu')).to_have_js_property('open',False)
                     # The studio cannot mutate data without authentication or origin.
                     rejected=page.request.post(BASE+'/api/studio/artworks',data={},headers={'Origin':BASE})
                     assert rejected.status == 403

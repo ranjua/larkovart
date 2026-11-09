@@ -2,6 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ArrowUpRight, Camera } from "lucide-react";
 import { dictionaries, isLocale } from "@/lib/i18n";
+import { galleryCopy } from "@/lib/gallery-copy";
 import { Navigation } from "@/components/navigation";
 export default async function LocaleLayout({
   children,
@@ -14,7 +15,35 @@ export default async function LocaleLayout({
   if (!isLocale(locale)) notFound();
   const t = dictionaries[locale];
   return (
-    <>
+    <div className="storefront">
+      <link
+        rel="preload"
+        href="/fonts/cormorant-garamond-normal-latin.woff2"
+        as="font"
+        type="font/woff2"
+        crossOrigin="anonymous"
+      />
+      {locale === "ru" && (
+        <link
+          rel="preload"
+          href="/fonts/cormorant-garamond-normal-cyrillic.woff2"
+          as="font"
+          type="font/woff2"
+          crossOrigin="anonymous"
+        />
+      )}
+      {!["zh", "ja"].includes(locale) && (
+        <link
+          rel="preload"
+          href={`/fonts/cormorant-garamond-italic-${locale === "ru" ? "cyrillic" : "latin"}.woff2`}
+          as="font"
+          type="font/woff2"
+          crossOrigin="anonymous"
+        />
+      )}
+      <a className="skip-link" href="#main-content">
+        {galleryCopy[locale].skip}
+      </a>
       <div className="preview-bar">{t.development}</div>
       <header className="site-header">
         <Link href={`/${locale}`} className="wordmark" aria-label="Larkova Art">
@@ -22,8 +51,13 @@ export default async function LocaleLayout({
         </Link>
         <Navigation locale={locale} />
       </header>
-      <main>{children}</main>
+      <main id="main-content" tabIndex={-1}>
+        {children}
+      </main>
       <footer className="site-footer">
+        <span className="footer-mark" aria-hidden="true">
+          L.
+        </span>
         <div className="footer-top">
           <Link className="wordmark" href={`/${locale}`}>
             larkova<span>ART & SOUL</span>
@@ -39,6 +73,9 @@ export default async function LocaleLayout({
             <ArrowUpRight size={17} />
           </a>
         </div>
+        <a className="footer-email" href="mailto:larkova.art@gmail.com">
+          larkova.art@gmail.com <ArrowUpRight size={18} />
+        </a>
         <div className="footer-bottom">
           <span>
             © {new Date().getFullYear()} Larkova Art. {t.rights}
@@ -47,6 +84,6 @@ export default async function LocaleLayout({
           <Link href="/studio">{t.studio} ↗</Link>
         </div>
       </footer>
-    </>
+    </div>
   );
 }

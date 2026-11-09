@@ -1,5 +1,24 @@
 # Current status — 2026-11-08
 
+## Public storefront exhibition-catalogue redesign — 2026-11-09
+
+The public gallery now has an original-led hero, expressive self-hosted display
+and interface typography, lake/clay/forest accents, a composed available/archive
+collection, an editorial studio photograph/story, and coordinated interaction
+motion. Existing copy, every category control, six locales, artwork routes,
+original photos, room proportions/disclosures and purchase/contact flows remain.
+The detail viewer adds a native accessible original-image dialog and room scene
+crossfades; scenes load on request. Checkout/result styling follows the gallery.
+Admin/OTP/social structure and all provider modes/configuration are unchanged.
+
+71 Node tests, typecheck/build and browser checks for responsive/languages,
+keyboard/touch, reduced motion, no JavaScript, artwork states, checkout, OTP/photo
+publishing and Social Studio pass. Isolated mobile lab median LCP~1.06s, CLS0.045;
+these are not field metrics. Screenshots, recordings and evidence:
+`docs/REDESIGN-VERIFICATION.md`. This is a protected Preview release, not a live
+commerce launch. Delivery configuration remains paused.
+
+
 ## Social Studio — implementation, account setup pending
 
 The social suite is implemented at `/studio/social`, protected by existing email OTP.

@@ -2,8 +2,9 @@ import Link from "next/link";
 import { ArrowLeft, ArrowUpRight, Fingerprint } from "lucide-react";
 import { notFound } from "next/navigation";
 import { dictionaries, isLocale, money } from "@/lib/i18n";
-import { artwork } from "@/lib/store";
+import { artwork, artworks } from "@/lib/store";
 import { mediumName } from "@/lib/catalog";
+import { ArtGrid } from "@/components/art-grid";
 import { ArtViewer } from "@/components/art-viewer";
 export const dynamic = "force-dynamic";
 export async function generateMetadata({
@@ -25,22 +26,29 @@ export default async function ArtPage({
   const a = await artwork(id);
   if (!a) notFound();
   const t = dictionaries[locale];
+  const related = (await artworks())
+    .filter((work) => work.id !== id && work.status === "available")
+    .slice(0, 2);
   return (
     <section className="section-wrap detail-section">
       <Link className="back-link" href={`/${locale}#collection`}>
         <ArrowLeft size={16} />
         {t.back}
       </Link>
+      <div className="detail-mobile-title">
+        <p className="eyebrow">YULIA LARKOVA / {t[a.category]}</p>
+        <h1>{a.title}</h1>
+      </div>
       <div className="detail-grid">
         <ArtViewer art={a} locale={locale} />
         <div className="detail-copy">
           <p className="eyebrow">YULIA LARKOVA / {t[a.category]}</p>
-          <h1>{a.title}</h1>
+          <h1 className="detail-desktop-title">{a.title}</h1>
           <p className="edition">
             <Fingerprint size={18} />
             {t.edition}
           </p>
-          <p className="detail-description">{a.descriptions[locale]}</p>
+
           <dl className="art-specs">
             <div>
               <dt>{t.medium}</dt>
@@ -80,9 +88,24 @@ export default async function ArtPage({
               {a.status === "reserved" ? t.reserved : t.unavailable}
             </p>
           )}
-          <p className="fine-print">{t.development}</p>
+          <p className="fine-print detail-mode-note">{t.development}</p>
+          <div className="detail-story">
+            <h2>{t.details}</h2>
+            <p className="detail-description">{a.descriptions[locale]}</p>
+          </div>
         </div>
       </div>
+      {related.length > 0 && (
+        <section className="related-works">
+          <div className="section-heading">
+            <div>
+              <p className="eyebrow">{t.selected}</p>
+              <h2>{t.collectionTitle}</h2>
+            </div>
+          </div>
+          <ArtGrid works={related} locale={locale} />
+        </section>
+      )}
     </section>
   );
 }
