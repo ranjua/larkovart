@@ -34,6 +34,10 @@ export async function init() {
           "CREATE TABLE IF NOT EXISTS payment_sessions (order_id TEXT PRIMARY KEY, checkout_id TEXT UNIQUE, token_hash TEXT NOT NULL, checkout_url TEXT, expires_at TEXT NOT NULL)",
           "CREATE TABLE IF NOT EXISTS fulfillment (order_id TEXT PRIMARY KEY, state TEXT NOT NULL, data TEXT NOT NULL DEFAULT '{}')",
           "CREATE TABLE IF NOT EXISTS webhook_inbox (id TEXT PRIMARY KEY, state TEXT NOT NULL, received_at TEXT NOT NULL)",
+          "CREATE INDEX IF NOT EXISTS orders_artwork_id ON orders(artwork_id)",
+          "CREATE TABLE IF NOT EXISTS deleted_artwork_ids (id TEXT PRIMARY KEY, deleted_at TEXT NOT NULL)",
+          "CREATE TRIGGER IF NOT EXISTS prevent_deleted_artwork_insert BEFORE INSERT ON artworks WHEN EXISTS(SELECT 1 FROM deleted_artwork_ids WHERE id=NEW.id) BEGIN SELECT RAISE(IGNORE); END",
+          "CREATE TRIGGER IF NOT EXISTS protect_ordered_artwork_delete BEFORE DELETE ON artworks WHEN EXISTS(SELECT 1 FROM orders WHERE artwork_id=OLD.id) BEGIN SELECT RAISE(ABORT, 'artwork_has_orders'); END",
           ...seedArtworks.map((a) => ({
             sql: "INSERT OR IGNORE INTO artworks VALUES (?, ?, ?, ?)",
             args: [a.id, JSON.stringify(a), a.status, a.published ? 1 : 0],
@@ -161,9 +165,102 @@ export async function studioOrders() {
 }
 export async function saveArtwork(a: Artwork) {
   await init();
-  // Never let an edit silently reopen a sold original.
-  await db().execute({
+  // Never let a stale editor resurrect a deleted original or reopen a sold one.
+  const saved = await db().execute({
     sql: `INSERT INTO artworks VALUES (?, ?, ?, ?) ON CONFLICT(id) DO UPDATE SET data=json_set(excluded.data,'$.photos',json(COALESCE(json_extract(artworks.data,'$.photos'),'[]')),'$.photoRevision',COALESCE(json_extract(artworks.data,'$.photoRevision'),0)), published=excluded.published`,
     args: [a.id, JSON.stringify(a), a.status, a.published ? 1 : 0],
   });
+  if (saved.rowsAffected !== 1)
+    throw new StoreError(
+      "Artwork was permanently deleted. Reload the studio.",
+      410,
+    );
+}
+
+export async function deletableArtworkIds(): Promise<string[]> {
+  await init();
+  const result = await db().execute(
+    "SELECT a.id FROM artworks a WHERE a.status != 'reserved' AND NOT EXISTS(SELECT 1 FROM orders o WHERE o.artwork_id=a.id)",
+  );
+  return result.rows.map((row) => String(row.id));
+}
+
+// Serialize the order check and deletion with checkout's write transaction.
+export async function deleteArtwork(id: string, expectedTitle: string) {
+  await init();
+  for (let attempt = 0; attempt < 6; attempt++) {
+    let tx: import("@libsql/client").Transaction | undefined;
+    try {
+      tx = await db().transaction("write");
+      const found = await tx.execute({
+        sql: "SELECT data,status FROM artworks WHERE id=?",
+        args: [id],
+      });
+      const row = found.rows[0];
+      if (!row) {
+        const retired = await tx.execute({
+          sql: "SELECT 1 FROM deleted_artwork_ids WHERE id=?",
+          args: [id],
+        });
+        if (!retired.rows.length)
+          throw new StoreError("Artwork not found.", 404);
+        await tx.commit();
+        return { id, alreadyDeleted: true };
+      }
+      if (JSON.parse(String(row.data)).title !== expectedTitle)
+        throw new StoreError(
+          "Artwork changed. Reload the studio before deleting.",
+          409,
+        );
+      const ordered = await tx.execute({
+        sql: "SELECT 1 FROM orders WHERE artwork_id=? LIMIT 1",
+        args: [id],
+      });
+      if (ordered.rows.length)
+        throw new StoreError(
+          "An order exists for this artwork. Hide it from the gallery instead.",
+          409,
+        );
+      if (row.status === "reserved")
+        throw new StoreError(
+          "A checkout is active. This artwork cannot be deleted.",
+          409,
+        );
+      await tx.execute({
+        sql: "INSERT INTO deleted_artwork_ids(id,deleted_at) VALUES (?,?)",
+        args: [id, new Date().toISOString()],
+      });
+      await tx.execute({ sql: "DELETE FROM artworks WHERE id=?", args: [id] });
+      // Preview customer collections share this DB. Other stores tolerate a missing catalog ID.
+      const saved = await tx.execute(
+        "SELECT 1 FROM sqlite_master WHERE type='table' AND name='customer_saved'",
+      );
+      if (saved.rows.length)
+        await tx.execute({
+          sql: "DELETE FROM customer_saved WHERE artwork_id=?",
+          args: [id],
+        });
+      await tx.commit();
+      return { id, alreadyDeleted: false };
+    } catch (error) {
+      if (tx) await tx.rollback();
+      if (
+        error instanceof Error &&
+        "code" in error &&
+        error.code === "SQLITE_BUSY"
+      ) {
+        if (attempt < 5) {
+          await new Promise((resolve) =>
+            setTimeout(resolve, 25 * (attempt + 1)),
+          );
+          continue;
+        }
+        throw new StoreError("Studio is busy. Try deleting again.", 503);
+      }
+      throw error;
+    } finally {
+      tx?.close();
+    }
+  }
+  throw new StoreError("Studio is busy. Try deleting again.", 503);
 }

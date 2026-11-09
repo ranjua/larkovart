@@ -1,5 +1,5 @@
 import { session, sameOrigin } from "@/lib/auth";
-import { saveArtwork } from "@/lib/store";
+import { saveArtwork, StoreError } from "@/lib/store";
 import { artworkSchema } from "@/lib/validation";
 import { photoUrls } from "@/lib/photo";
 export async function POST(request: Request) {
@@ -46,7 +46,9 @@ export async function POST(request: Request) {
       );
     await saveArtwork(parsed.data);
     return Response.json({ ok: true });
-  } catch {
+  } catch (error) {
+    if (error instanceof StoreError)
+      return Response.json({ error: error.message }, { status: error.status });
     return Response.json({ error: "Unable to save artwork." }, { status: 500 });
   }
 }

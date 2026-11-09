@@ -2494,3 +2494,9 @@ textarea {
 .studio-auth .studio-social-link {
   display: none;
 }
+
+.studio-delete-artwork { border-top:1px solid var(--line); padding-top:16px; margin-top:8px; }
+.studio-delete-artwork>.button { color:#8c3931; border:1px solid #cfb1aa; background:transparent; min-height:44px; width:100%; gap:10px; }
+.studio-delete-artwork>.button:enabled:hover { background:#f6e9e4; }
+.studio-delete-artwork>.button:disabled { cursor:not-allowed; }
+.studio-delete-artwork>.fine-print { font-size:12px; line-height:1.6; margin-top:8px; }

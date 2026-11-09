@@ -10,6 +10,7 @@ import {
   ShoppingBag,
   Mail,
   ArrowLeft,
+  Trash2,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { artworkPhoto, mediumName, type Artwork } from "@/lib/catalog";
@@ -31,11 +32,13 @@ export function Studio({
   orders,
   aiConnected,
   photoConnected = false,
+  deletableIds = [],
 }: {
   works: Artwork[] | null;
   orders: StudioOrder[];
   aiConnected: boolean;
   photoConnected?: boolean;
+  deletableIds?: string[];
 }) {
   const router = useRouter();
   const [message, setMessage] = useState("");
@@ -89,6 +92,37 @@ export function Studio({
       setMessage("Unable to sign in.");
     } finally {
       form.reset();
+      setBusy(false);
+    }
+  }
+  async function remove(a: Artwork) {
+    if (
+      !window.confirm(
+        `Permanently delete “${a.title}”? This removes the catalog entry and cannot be undone. Uploaded photo files are kept.`,
+      )
+    )
+      return;
+    setBusy(true);
+    setMessage("");
+    try {
+      const response = await fetch(`/api/studio/artworks/${a.id}`, {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ confirmTitle: a.title }),
+      });
+      const result = await response.json();
+      if (!response.ok) {
+        setMessage(result.error || "Unable to delete artwork.");
+        router.refresh();
+        return;
+      }
+      setMessage(`“${a.title}” was permanently deleted.`);
+      router.refresh();
+    } catch {
+      setMessage(
+        "Deletion could not be confirmed. Reload the studio before trying again.",
+      );
+    } finally {
       setBusy(false);
     }
   }
@@ -505,6 +539,23 @@ export function Studio({
                 <button className="button button-dark" disabled={busy}>
                   Save changes
                 </button>
+                <div className="studio-delete-artwork">
+                  <button
+                    type="button"
+                    className="button"
+                    disabled={busy || !deletableIds.includes(a.id)}
+                    aria-describedby={`delete-help-${a.id}`}
+                    onClick={() => remove(a)}
+                  >
+                    <Trash2 size={16} />
+                    Delete artwork
+                  </button>
+                  <p id={`delete-help-${a.id}`} className="fine-print">
+                    {deletableIds.includes(a.id)
+                      ? "Permanently remove this listing. Uploaded photos are kept."
+                      : "Order history or an active checkout prevents deletion. You can hide it from the gallery instead."}
+                  </p>
+                </div>
               </form>
             ))}
           </div>

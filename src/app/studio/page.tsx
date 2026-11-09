@@ -1,7 +1,7 @@
 import { RecurrenteTest } from "@/components/recurrente-test";
 import Link from "next/link";
 import { session } from "@/lib/auth";
-import { artworks, studioOrders } from "@/lib/store";
+import { artworks, studioOrders, deletableArtworkIds } from "@/lib/store";
 import { Studio } from "@/components/studio";
 import { IntegrationPanel } from "@/components/integration-panel";
 import { recurrenteConfigured } from "@/lib/integrations/recurrente";
@@ -17,11 +17,16 @@ export default async function StudioPage() {
       <Link className="wordmark" href="/es">
         larkova<span>ARTIST STUDIO</span>
       </Link>
-      {authorized && <Link className="studio-social-link button" href="/studio/social">Social studio ↗</Link>}
+      {authorized && (
+        <Link className="studio-social-link button" href="/studio/social">
+          Social studio ↗
+        </Link>
+      )}
       {authorized ? (
         <Studio
           works={await artworks(true)}
           orders={await studioOrders()}
+          deletableIds={await deletableArtworkIds()}
           photoConnected={photoConfigured()}
           aiConnected={
             !!process.env.OPENAI_API_KEY && !!process.env.OPENAI_TEXT_MODEL

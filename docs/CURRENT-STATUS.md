@@ -1,5 +1,22 @@
 # Current status — 2026-11-09
 
+## Permanent artwork deletion — 2026-11-09
+
+Removed the order-free duplicate Atitlan listing
+`work-21abbe9e-c969-4abc-be16-2f73c3e4be88` from the verified Preview development
+database. Kept original `atitlan` and its two order records. Other artwork,
+orders, payment sessions and fulfillment rows were verified unchanged. The
+hosted catalog now has five works and one Atitlan. Uploaded photos are retained.
+
+Studio Collection now has a confirmed **Delete artwork** action, disabled when
+any order/quote history or active checkout exists. A server-side write transaction
+rechecks the full order history; database guards prevent deleting ordered works,
+cold-start reseeding and stale-edit resurrection. The row/JSON is hard-deleted;
+only its retired ID/time remains. Current stale saves return HTTP 410. 83 Node
+tests, typecheck/build and isolated admin deletion browser checks pass. Details:
+`docs/ARTWORK-DELETION.md`. Payment/courier modes and connections are unchanged.
+
+
 ## Immersive art exhibition — 2026-11-09
 
 The homepage now opens as a dark, expressive exhibition with real featured-work
