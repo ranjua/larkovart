@@ -1,33 +1,8 @@
 import { customerServer } from "@/lib/customer/server";
+import { customerResponse } from "@/lib/customer/response";
 import { customerEmailLimit } from "@/lib/customer/mail";
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
-// Strip bearer/provider material from JSON; sessions remain in HttpOnly cookies.
-function publicJson(v: unknown): unknown {
-  if (Array.isArray(v)) return v.map(publicJson);
-  if (v && typeof v === "object")
-    return Object.fromEntries(
-      Object.entries(v)
-        .filter(
-          ([k]) =>
-            ![
-              "token",
-              "accessToken",
-              "refreshToken",
-              "idToken",
-              "password",
-              "secret",
-              "totpURI",
-              "backupCodes",
-              "access_token",
-              "refresh_token",
-              "id_token",
-            ].includes(k),
-        )
-        .map(([k, x]) => [k, publicJson(x)]),
-    );
-  return v;
-}
 async function handle(request: Request) {
   try {
     const path = new URL(request.url).pathname.replace(/^\/api\/auth/, "");
@@ -132,15 +107,7 @@ async function handle(request: Request) {
       }
     }
     const response = await s.auth.handler(request);
-    response.headers.set("Cache-Control", "no-store");
-    if (response.headers.get("Content-Type")?.includes("application/json")) {
-      response.headers.delete("content-length");
-      return new Response(JSON.stringify(publicJson(await response.json())), {
-        status: response.status,
-        headers: response.headers,
-      });
-    }
-    return response;
+    return await customerResponse(response);
   } catch {
     return Response.json(
       { message: "Account service is temporarily unavailable." },

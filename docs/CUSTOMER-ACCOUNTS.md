@@ -28,6 +28,11 @@ created. The owner must complete the first Google login to verify the return
 and customer session. Email/password and customer OTP remain disabled pending
 `CUSTOMER_EMAIL_FROM` on a verified Resend domain.
 
+The callback response wrapper has also been corrected to forward empty OAuth
+redirects and their cookies without parsing them as JSON. A complete signed
+Google callback/session fixture now covers that regression; the earlier hosted
+start-page check alone did not verify the completed login.
+
 ## Setup reference — email sender remains pending
 
 1. **Email:** in Resend, verify a sending domain you control. Set Vercel Preview

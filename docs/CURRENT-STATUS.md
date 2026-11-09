@@ -1,5 +1,17 @@
 # Current status — 2026-11-09
 
+## Google callback redirect fix — 2026-11-09
+
+A real login exposed a response-wrapper bug: Better Auth can return an empty
+OAuth redirect with Content-Type application/json. The wrapper attempted to
+parse the empty body and returned a generic 503 after the callback. It now
+forwards redirects and their session/state cookies without JSON parsing, handles
+empty JSON responses, and continues redacting bearer/provider fields from JSON.
+78 Node tests and the build pass, including a complete signed-Google-identity
+fixture through token exchange, callback, encrypted provider storage, session
+cookie forwarding and replay rejection. These fixtures do not submit a real
+Google account's consent. Existing Google credentials need no change.
+
 ## Customer accounts, photo sets and buying policies — 2026-11-09
 
 Implemented customer Google OAuth and verified email/password accounts, optional

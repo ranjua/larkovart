@@ -26,6 +26,9 @@ with tempfile.TemporaryDirectory(prefix='larkova-customer-browser-') as director
       if capture.exists():return json.loads(capture.read_text())['code']
       time.sleep(.1)
      raise AssertionError('No fixture email received')
+    rejected=context.request.get(BASE+'/api/auth/callback/google?error=access_denied',max_redirects=0)
+    assert rejected.status==302 and rejected.text()==''
+    assert rejected.headers.get('cache-control')=='no-store'
     page.goto(BASE+'/en/art/mar')
     page.get_by_role('button',name='Save to favorites',exact=True).first.click()
     page.get_by_role('button',name='Add to cart',exact=True).first.click()

@@ -5,6 +5,7 @@ import { mkdtempSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { createCustomerAuth } from "../src/lib/customer/auth-core.ts";
+import { customerResponse } from "../src/lib/customer/response.ts";
 import { saveItem, savedIds } from "../src/lib/customer/saved.ts";
 
 test("verified accounts, optional email OTP, recovery and isolated collections", async () => {
@@ -286,7 +287,10 @@ test("Google uses fixed callback, one-use state and secure customer cookies", as
         "https://accounts.example.test/api/auth/callback/google?state=invalid&code=fake",
       ),
     );
-    assert.equal(callback.status, 302);
+    const forwarded = await customerResponse(callback);
+    assert.equal(forwarded.status, 302);
+    assert.ok(forwarded.headers.get("location"));
+    assert.equal(await forwarded.text(), "");
     assert.equal(
       (await client.execute("SELECT count(*) AS n FROM customer_session"))
         .rows[0].n,
@@ -331,5 +335,193 @@ test("separate cold starts create only additive customer tables", async () => {
     a.close();
     b.close();
     rmSync(directory, { recursive: true, force: true });
+  }
+});
+
+test("OAuth response forwarding preserves redirects and cookies without parsing empty JSON", async () => {
+  const headers = new Headers({
+    "content-type": "application/json",
+    location: "https://accounts.example.test/en/account",
+  });
+  headers.append(
+    "set-cookie",
+    "larkova_customer.session_token=fixture; Path=/; HttpOnly; Secure; SameSite=Lax",
+  );
+  headers.append(
+    "set-cookie",
+    "larkova_customer.oauth_state=; Path=/; Max-Age=0",
+  );
+  const result = await customerResponse(
+    new Response(null, { status: 302, headers }),
+  );
+  assert.equal(result.status, 302);
+  assert.equal(
+    result.headers.get("location"),
+    "https://accounts.example.test/en/account",
+  );
+  assert.equal(result.headers.getSetCookie().length, 2);
+  assert.equal(result.headers.get("cache-control"), "no-store");
+  assert.equal(await result.text(), "");
+  const redirect = await customerResponse(
+    Response.redirect("https://accounts.example.test/en/account", 302),
+  );
+  assert.equal(redirect.status, 302);
+  const session = await customerResponse(
+    Response.json({
+      token: "private",
+      session: { token: "private", id: "public" },
+      user: { name: "Collector" },
+      accessToken: "private",
+    }),
+  );
+  assert.deepEqual(await session.json(), {
+    session: { id: "public" },
+    user: { name: "Collector" },
+  });
+  const empty = await customerResponse(
+    new Response(null, {
+      status: 200,
+      headers: { "content-type": "application/json" },
+    }),
+  );
+  assert.equal(await empty.text(), "");
+});
+
+test("Google callback completes a verified session through the response wrapper", async () => {
+  const { generateKeyPairSync, sign } = await import("node:crypto");
+  const { publicKey, privateKey } = generateKeyPairSync("rsa", {
+    modulusLength: 2048,
+  });
+  const jwk = {
+    ...publicKey.export({ format: "jwk" }),
+    kid: "fixture-google-key",
+    alg: "RS256",
+    use: "sig",
+  };
+  const client = createClient({ url: ":memory:" });
+  const origin = "https://accounts.example.test";
+  const service = createCustomerAuth(
+    client,
+    {
+      secret: "google-callback-fixture-secret-at-least-thirty-two-characters",
+      baseURL: origin,
+      environment: "preview",
+      emailReady: false,
+      google: {
+        clientId: "fixture-client-id",
+        clientSecret: "fixture-client-secret",
+      },
+    },
+    async () => {
+      throw new Error("Google signup must not send email");
+    },
+  );
+  const originalFetch = globalThis.fetch;
+  let tokenRequests = 0;
+  let nonce: string | undefined;
+  let jar = "";
+  async function call(path: string, body?: unknown) {
+    const raw = await service.auth.handler(
+      new Request(origin + "/api/auth/" + path, {
+        method: body ? "POST" : "GET",
+        headers: { origin, "content-type": "application/json", cookie: jar },
+        ...(body ? { body: JSON.stringify(body) } : {}),
+      }),
+    );
+    const r = await customerResponse(raw);
+    for (const cookie of r.headers.getSetCookie()) {
+      const [pair] = cookie.split(";"),
+        key = pair.split("=")[0];
+      const entries = jar
+        .split("; ")
+        .filter((x) => x && !x.startsWith(key + "="));
+      if (!pair.endsWith("=")) entries.push(pair);
+      jar = entries.join("; ");
+    }
+    return r;
+  }
+  globalThis.fetch = async (input) => {
+    const url =
+      typeof input === "string"
+        ? input
+        : input instanceof URL
+          ? input.href
+          : input.url;
+    if (url === "https://www.googleapis.com/oauth2/v3/certs")
+      return Response.json({ keys: [jwk] });
+    if (url === "https://oauth2.googleapis.com/token") {
+      tokenRequests++;
+      const now = Math.floor(Date.now() / 1000);
+      const header = Buffer.from(
+        JSON.stringify({ alg: "RS256", kid: jwk.kid, typ: "JWT" }),
+      ).toString("base64url");
+      const payload = Buffer.from(
+        JSON.stringify({
+          iss: "https://accounts.google.com",
+          aud: "fixture-client-id",
+          sub: "fixture-google-subject",
+          email: "google-collector@example.test",
+          email_verified: true,
+          name: "Google Collector",
+          iat: now,
+          exp: now + 300,
+          ...(nonce ? { nonce } : {}),
+        }),
+      ).toString("base64url");
+      const signature = sign(
+        "RSA-SHA256",
+        Buffer.from(header + "." + payload),
+        privateKey,
+      ).toString("base64url");
+      return Response.json({
+        access_token: "fixture-access-token",
+        token_type: "Bearer",
+        expires_in: 3600,
+        id_token: header + "." + payload + "." + signature,
+        scope: "openid email profile",
+      });
+    }
+    throw new Error("Unexpected fixture network destination");
+  };
+  try {
+    await service.ready();
+    const start = await call("sign-in/social", {
+      provider: "google",
+      callbackURL: "/en/account",
+    });
+    assert.equal(start.status, 200);
+    const consent = new URL((await start.json()).url);
+    nonce = consent.searchParams.get("nonce") || undefined;
+    const callbackPath =
+      "callback/google?code=fixture-code&state=" +
+      encodeURIComponent(consent.searchParams.get("state")!);
+    const callback = await call(callbackPath);
+    assert.equal(callback.status, 302);
+    assert.equal(
+      new URL(callback.headers.get("location")!, origin).href,
+      origin + "/en/account",
+    );
+    assert.equal(await callback.text(), "");
+    const session = await (await call("get-session")).json();
+    assert.equal(session.user.email, "google-collector@example.test");
+    assert.equal(session.user.emailVerified, true);
+    assert.equal(session.session.token, undefined);
+    const tokens = await client.execute(
+      "SELECT accessToken FROM customer_account",
+    );
+    assert.ok(tokens.rows[0].accessToken);
+    assert.notEqual(tokens.rows[0].accessToken, "fixture-access-token");
+    assert.equal(tokenRequests, 1);
+    const replay = await call(callbackPath);
+    assert.equal(replay.status, 302);
+    assert.equal(tokenRequests, 1);
+    assert.equal(
+      (await client.execute("SELECT count(*) AS n FROM customer_user")).rows[0]
+        .n,
+      1,
+    );
+  } finally {
+    globalThis.fetch = originalFetch;
+    client.close();
   }
 });
