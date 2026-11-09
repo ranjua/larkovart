@@ -1,4 +1,5 @@
 "use client";
+import { ItemActions } from "@/components/customer/actions";
 import Image from "next/image";
 import Link from "next/link";
 import { ArrowUpRight } from "lucide-react";
@@ -124,6 +125,11 @@ export function ArtGrid({
                 <span className="art-price">{money(a.price, locale)}</span>
               )}
             </div>
+            <ItemActions
+              id={a.id}
+              locale={locale}
+              available={a.status === "available"}
+            />
           </article>
         ))}
       </div>

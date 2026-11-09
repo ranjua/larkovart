@@ -3,10 +3,17 @@ import Image from "next/image";
 import { useEffect, useRef, useState } from "react";
 import { Expand, ImageIcon, Layers3, X } from "lucide-react";
 import { dictionaries, type Locale } from "@/lib/i18n";
+import { customerCopy } from "@/lib/customer/copy";
 import { galleryCopy } from "@/lib/gallery-copy";
 import { artworkPhoto, type Artwork } from "@/lib/catalog";
 import { RoomScene, roomNames, roomScenes } from "./room-scene";
 export function ArtViewer({ art, locale }: { art: Artwork; locale: Locale }) {
+  const [photoIndex, setPhotoIndex] = useState(0);
+  const photos = [
+    { image: artworkPhoto(art), kind: "mainPhoto" as const },
+    ...(art.photos || []),
+  ];
+  const current = photos[photoIndex] || photos[0];
   const [room, setRoom] = useState(false),
     [scene, setScene] = useState(0),
     [activeScene, setActiveScene] = useState<number | null>(null),
@@ -21,6 +28,7 @@ export function ArtViewer({ art, locale }: { art: Artwork; locale: Locale }) {
   const t = dictionaries[locale],
     g = galleryCopy[locale];
   function choose(i: number) {
+    setPhotoIndex(0);
     setFailed(null);
     requested.current = i;
     setScene(i);
@@ -46,7 +54,10 @@ export function ArtViewer({ art, locale }: { art: Artwork; locale: Locale }) {
           <button
             aria-pressed={!room}
             className={!room ? "active" : ""}
-            onClick={() => setRoom(false)}
+            onClick={() => {
+              setRoom(false);
+              setPhotoIndex(0);
+            }}
           >
             <ImageIcon size={16} />
             {t.photo}
@@ -63,8 +74,14 @@ export function ArtViewer({ art, locale }: { art: Artwork; locale: Locale }) {
           )}
         </div>
         <span className="viewer-index">
-          {room ? `0${scene + 2}` : "01"} /{" "}
-          {art.category === "sculptures" ? "01" : "04"}
+          {String(room ? photos.length + scene + 1 : photoIndex + 1).padStart(
+            2,
+            "0",
+          )}{" "}
+          /{" "}
+          {String(
+            photos.length + (art.category === "sculptures" ? 0 : 3),
+          ).padStart(2, "0")}
         </span>
       </div>
       <div className="viewer-stage">
@@ -73,8 +90,8 @@ export function ArtViewer({ art, locale }: { art: Artwork; locale: Locale }) {
           aria-hidden={room && activeScene !== null}
         >
           <Image
-            src={artworkPhoto(art)}
-            alt={art.title}
+            src={current.image}
+            alt={`${art.title} · ${customerCopy[locale][current.kind]}`}
             width={1100}
             height={1100}
             priority
@@ -83,7 +100,7 @@ export function ArtViewer({ art, locale }: { art: Artwork; locale: Locale }) {
           <a
             ref={trigger}
             className="photo-expand"
-            href={artworkPhoto(art)}
+            href={current.image}
             target="_blank"
             rel="noopener noreferrer"
             aria-label={g.expand}
@@ -118,6 +135,27 @@ export function ArtViewer({ art, locale }: { art: Artwork; locale: Locale }) {
           </div>
         ))}
       </div>
+      {photos.length > 1 && (
+        <div
+          className="art-photo-options"
+          role="group"
+          aria-label={customerCopy[locale].photos}
+        >
+          {photos.map((p, i) => (
+            <button
+              key={"id" in p ? p.id : "main"}
+              aria-pressed={!room && photoIndex === i}
+              onClick={() => {
+                setRoom(false);
+                setPhotoIndex(i);
+              }}
+            >
+              <img src={p.image} alt="" loading="lazy" />
+              <span>{customerCopy[locale][p.kind]}</span>
+            </button>
+          ))}
+        </div>
+      )}
       {room && art.category !== "sculptures" && (
         <>
           <div className="scene-options" aria-label={t.room}>
@@ -180,7 +218,11 @@ export function ArtViewer({ art, locale }: { art: Artwork; locale: Locale }) {
               <X size={24} />
             </button>
           </header>
-          <img src={artworkPhoto(art)} alt={art.title} loading="lazy" />
+          <img
+            src={current.image}
+            alt={`${art.title} · ${customerCopy[locale][current.kind]}`}
+            loading="lazy"
+          />
           <p>
             {t.edition} · {art.width} × {art.height} cm
           </p>

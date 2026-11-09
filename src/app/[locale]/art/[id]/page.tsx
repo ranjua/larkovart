@@ -1,3 +1,5 @@
+import { ItemActions } from "@/components/customer/actions";
+import { customerCopy } from "@/lib/customer/copy";
 import Link from "next/link";
 import { ArrowLeft, ArrowUpRight, Fingerprint } from "lucide-react";
 import { notFound } from "next/navigation";
@@ -88,6 +90,18 @@ export default async function ArtPage({
               {a.status === "reserved" ? t.reserved : t.unavailable}
             </p>
           )}
+          <ItemActions
+            id={a.id}
+            locale={locale}
+            available={a.status === "available"}
+          />
+          <Link
+            className="text-link buying-policy-link"
+            href={`/${locale}/policies`}
+          >
+            {customerCopy[locale].policies}
+            <ArrowUpRight size={16} />
+          </Link>
           <p className="fine-print detail-mode-note">{t.development}</p>
           <div className="detail-story">
             <h2>{t.details}</h2>

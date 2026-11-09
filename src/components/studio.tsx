@@ -1,4 +1,5 @@
 "use client";
+import { ArtworkPhotosEditor } from "./artwork-photos-editor";
 import { useState, type FormEvent } from "react";
 import Image from "next/image";
 import Link from "next/link";
@@ -380,6 +381,11 @@ export function Studio({
                     required
                   />
                 </label>
+                <ArtworkPhotosEditor
+                  key={`${a.id}:${a.photoRevision || 0}`}
+                  art={a}
+                  connected={photoConnected}
+                />
                 <details className="packing-details">
                   <summary>Packed dimensions & shipping allowance</summary>
                   {a.packingEstimate && (

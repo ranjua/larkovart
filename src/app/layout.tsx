@@ -3,6 +3,7 @@ import { headers } from "next/headers";
 import "./fonts.css";
 import "./globals.css";
 import "./gallery.css";
+import "./customer.css";
 export const metadata: Metadata = {
   title: {
     default: "Larkova Art — Original works by Yulia Larkova",

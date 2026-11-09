@@ -19,7 +19,7 @@ const config: NextConfig = {
     "/api/studio/social/**": ["./public/artworks/**/*"],
     "/api/cron/social": ["./public/artworks/**/*"],
   },
-  serverExternalPackages: ["@libsql/client"],
+  serverExternalPackages: ["@libsql/client", "@libsql/kysely-libsql"],
   async headers() {
     return [
       {

@@ -1,6 +1,13 @@
 import type { Locale } from "./i18n.ts";
 export type Category = "paintings" | "drawings" | "sculptures";
+export type ArtworkPhoto = {
+  id: string;
+  image: string;
+  kind: "detail" | "backPhoto" | "signature" | "edge" | "otherPhoto";
+};
 export type Artwork = {
+  photos?: ArtworkPhoto[];
+  photoRevision?: number;
   id: string;
   title: string;
   category: Category;
@@ -12,7 +19,13 @@ export type Artwork = {
   year: number;
   price: number;
   status: "available" | "reserved" | "sold";
-  packingEstimate?: { length: number; width: number; height: number; weight: number; basis: "unframed_canvas_planning" };
+  packingEstimate?: {
+    length: number;
+    width: number;
+    height: number;
+    weight: number;
+    basis: "unframed_canvas_planning";
+  };
   parcel?: import("./integrations/dhl.ts").Parcel;
   published: boolean;
   descriptions: Record<Locale, string>;
@@ -26,7 +39,13 @@ export function artworkPhoto(art: Pick<Artwork, "image" | "originalImage">) {
 export const seedArtworks: Artwork[] = [
   {
     id: "atitlan",
-    packingEstimate: { length: 62, width: 62, height: 14, weight: 4, basis: "unframed_canvas_planning" },
+    packingEstimate: {
+      length: 62,
+      width: 62,
+      height: 14,
+      weight: 4,
+      basis: "unframed_canvas_planning",
+    },
     title: "Atitlan",
     category: "paintings",
     image: "/artworks/Atitlan.jpg",
@@ -48,7 +67,13 @@ export const seedArtworks: Artwork[] = [
   },
   {
     id: "gato",
-    packingEstimate: { length: 62, width: 62, height: 14, weight: 4, basis: "unframed_canvas_planning" },
+    packingEstimate: {
+      length: 62,
+      width: 62,
+      height: 14,
+      weight: 4,
+      basis: "unframed_canvas_planning",
+    },
     title: "Gato",
     category: "paintings",
     image: "/artworks/Gato.jpg",
@@ -70,7 +95,13 @@ export const seedArtworks: Artwork[] = [
   },
   {
     id: "mar",
-    packingEstimate: { length: 62, width: 62, height: 14, weight: 4, basis: "unframed_canvas_planning" },
+    packingEstimate: {
+      length: 62,
+      width: 62,
+      height: 14,
+      weight: 4,
+      basis: "unframed_canvas_planning",
+    },
     title: "Mar2",
     category: "paintings",
     image: "/artworks/Mar2.jpg",

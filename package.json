@@ -25,7 +25,10 @@
     "react": "latest",
     "react-dom": "latest",
     "svix": "^2.9.1",
-    "zod": "latest"
+    "zod": "latest",
+    "better-auth": "^1.7.18",
+    "@libsql/kysely-libsql": "^0.4.1",
+    "kysely": "^0.29.8"
   },
   "devDependencies": {
     "@types/node": "latest",

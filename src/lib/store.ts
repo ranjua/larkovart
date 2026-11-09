@@ -7,20 +7,19 @@ let client: Client | undefined;
 let ready: Promise<void> | undefined;
 export function db() {
   if (!client) {
-    const databaseUrl = process.env.DATABASE_URL || process.env.TURSO_DATABASE_URL;
+    const databaseUrl =
+      process.env.DATABASE_URL || process.env.TURSO_DATABASE_URL;
     if (process.env.VERCEL && !databaseUrl)
       throw new Error(
         "Configure an isolated development database for Vercel previews.",
       );
-    if (
-      databaseUrl &&
-      process.env.DATABASE_ENVIRONMENT !== "development"
-    )
+    if (databaseUrl && process.env.DATABASE_ENVIRONMENT !== "development")
       throw new Error("Only development databases are permitted.");
     if (!databaseUrl) mkdirSync(".data", { recursive: true });
     client = createClient({
       url: databaseUrl || "file:.data/studio.db",
-      authToken: process.env.DATABASE_AUTH_TOKEN || process.env.TURSO_AUTH_TOKEN,
+      authToken:
+        process.env.DATABASE_AUTH_TOKEN || process.env.TURSO_AUTH_TOKEN,
     });
   }
   return client;
@@ -164,7 +163,7 @@ export async function saveArtwork(a: Artwork) {
   await init();
   // Never let an edit silently reopen a sold original.
   await db().execute({
-    sql: `INSERT INTO artworks VALUES (?, ?, ?, ?) ON CONFLICT(id) DO UPDATE SET data=excluded.data, published=excluded.published`,
+    sql: `INSERT INTO artworks VALUES (?, ?, ?, ?) ON CONFLICT(id) DO UPDATE SET data=json_set(excluded.data,'$.photos',json(COALESCE(json_extract(artworks.data,'$.photos'),'[]')),'$.photoRevision',COALESCE(json_extract(artworks.data,'$.photoRevision'),0)), published=excluded.published`,
     args: [a.id, JSON.stringify(a), a.status, a.published ? 1 : 0],
   });
 }

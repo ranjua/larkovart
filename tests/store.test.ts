@@ -87,3 +87,25 @@ test("a local quote request never simulates payment or consumes the original", a
   assert.equal(result.status, "quote_requested");
   assert.equal((await store.artwork("mar"))?.status, "available");
 });
+test("metadata saves preserve the latest photo set and sold inventory", async () => {
+  const stale = (await store.artwork("mar"))!;
+  const photos = [
+    { id: "photo-fixture", image: "/artworks/Mar.jpg", kind: "detail" },
+  ];
+  await store
+    .db()
+    .execute({
+      sql: "UPDATE artworks SET data=json_set(data,'$.photos',json(?),'$.photoRevision',1) WHERE id=?",
+      args: [JSON.stringify(photos), "mar"],
+    });
+  const ordersBefore = (await store.studioOrders()).length;
+  await store.saveArtwork({
+    ...stale,
+    title: "Updated with concurrent photo edit",
+  });
+  const updated = (await store.artwork("mar"))!;
+  assert.deepEqual(updated.photos, photos);
+  assert.equal(updated.photoRevision, 1);
+  assert.equal(updated.title, "Updated with concurrent photo edit");
+  assert.equal((await store.studioOrders()).length, ordersBefore);
+});

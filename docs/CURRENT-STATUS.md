@@ -1,5 +1,33 @@
 # Current status — 2026-11-09
 
+## Customer accounts, photo sets and buying policies — 2026-11-09
+
+Implemented customer Google OAuth and verified email/password accounts, optional
+extra email OTP for password sign-ins, recovery/session revocation, guest and
+account favorites/cart, guest merging and private cross-device saved collections.
+Studio remains a separate fixed-email OTP administrator. A cart can hold multiple
+originals; each uses its own existing checkout and destination confirmation.
+Saved items never reserve inventory. New interface and policies support all six
+languages. Authentic photo sets support up to six extra views, with the main
+original first, verified Cloudinary uploads and revision-safe saves. Metadata
+edits preserve the latest photo set. No extra photographs have been invented.
+
+76 Node tests and typecheck/webpack build pass. Isolated browser verification
+covers registration and real application mail callbacks using a fake transport,
+verification, guest merging, optional OTP, private saved items, token redaction,
+CSRF, Studio separation, photo validation/revisions and policies. Storefront
+regressions pass across 30 locale/width combinations, keyboard, no-JS, reduced
+motion, room scenes and inventory states. These are fixture tests, not evidence
+of real Google consent or customer email delivery.
+
+A dedicated customer auth secret and canonical origin are provisioned only for
+`dev/nextjs-art-store` Preview. **Customer login activation still requires a
+verified Resend sender (`CUSTOMER_EMAIL_FROM`) and Google OAuth client credentials.**
+Unavailable methods stay disabled. No real customer accounts, emails, payments,
+shipments, social posts or paid services were created during verification.
+Delivery setup remains paused. Setup and limitations: `docs/CUSTOMER-ACCOUNTS.md`.
+
+
 ## Public storefront exhibition-catalogue redesign — 2026-11-09
 
 The public gallery now has an original-led hero, expressive self-hosted display
