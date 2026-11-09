@@ -4,6 +4,7 @@ import "./fonts.css";
 import "./globals.css";
 import "./gallery.css";
 import "./customer.css";
+import "./experience.css";
 export const metadata: Metadata = {
   title: {
     default: "Larkova Art — Original works by Yulia Larkova",

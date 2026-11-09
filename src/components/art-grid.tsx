@@ -1,4 +1,5 @@
 "use client";
+import { ExhibitionLaunch } from "./exhibition";
 import { ItemActions } from "@/components/customer/actions";
 import Image from "next/image";
 import Link from "next/link";
@@ -103,6 +104,11 @@ export function ArtGrid({
                 <ArrowUpRight size={21} />
               </span>
             </Link>
+            <ExhibitionLaunch
+              id={a.id}
+              locale={locale}
+              className="card-gallery-launch"
+            />
             <div className="art-card-topline">
               <span aria-hidden="true">
                 {String(works.indexOf(a) + 1).padStart(2, "0")} / L

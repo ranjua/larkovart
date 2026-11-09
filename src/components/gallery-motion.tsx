@@ -86,12 +86,57 @@ export function GalleryMotion() {
       if (reduced.matches || document.hidden)
         animations.forEach((a) => a.cancel());
     };
+    const hero = root.querySelector<HTMLElement>(".experience-hero");
+    let ambientFrame = 0,
+      scrollFrame = 0;
+    const light = (event: PointerEvent) => {
+      if (
+        reduced.matches ||
+        event.pointerType !== "mouse" ||
+        !hero ||
+        ambientFrame
+      )
+        return;
+      const box = hero.getBoundingClientRect();
+      const lightX = ((event.clientX - box.left) / box.width) * 100;
+      const lightY = ((event.clientY - box.top) / box.height) * 100;
+      ambientFrame = requestAnimationFrame(() => {
+        hero.style.setProperty("--light-x", `${lightX}%`);
+        hero.style.setProperty("--light-y", `${lightY}%`);
+        ambientFrame = 0;
+      });
+    };
+    const progress = () => {
+      if (scrollFrame || document.hidden || reduced.matches) return;
+      scrollFrame = requestAnimationFrame(() => {
+        const distance = document.documentElement.scrollHeight - innerHeight;
+        root.style.setProperty(
+          "--gallery-progress",
+          String(distance > 0 ? Math.min(1, scrollY / distance) : 0),
+        );
+        if (hero && scrollY < hero.offsetHeight + 150)
+          hero.style.setProperty(
+            "--scroll-depth",
+            `${Math.min(80, scrollY * 0.08)}px`,
+          );
+        scrollFrame = 0;
+      });
+    };
+    hero?.addEventListener("pointermove", light, { passive: true });
+    window.addEventListener("scroll", progress, { passive: true });
+    window.addEventListener("resize", progress);
+    progress();
     depth?.addEventListener("pointermove", move);
     depth?.addEventListener("pointerleave", reset);
     reduced.addEventListener("change", stop);
     document.addEventListener("visibilitychange", stop);
     return () => {
       observer?.disconnect();
+      cancelAnimationFrame(ambientFrame);
+      cancelAnimationFrame(scrollFrame);
+      hero?.removeEventListener("pointermove", light);
+      window.removeEventListener("scroll", progress);
+      window.removeEventListener("resize", progress);
       reset();
       animations.forEach((a) => a.cancel());
       depth?.removeEventListener("pointermove", move);

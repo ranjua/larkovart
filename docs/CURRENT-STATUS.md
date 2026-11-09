@@ -1,5 +1,23 @@
 # Current status — 2026-11-09
 
+## Immersive art exhibition — 2026-11-09
+
+The homepage now opens as a dark, expressive exhibition with real featured-work
+selection, contour/light/depth interactions and an **Enter the gallery** action.
+The full-screen gallery supports original-photo expansion where supported,
+keyboard and touch/swipe navigation, focus containment/return, accurate statuses,
+favorites/cart and detail links. The collection has an editorial lead work, a
+real-photograph zoom/inspection chapter and a more immersive artist/story chapter.
+Original artwork files, all six languages, existing copy/filters, purchase routes,
+room previews and private admin/account/payment/courier behavior are preserved.
+
+78 Node tests, type checking, the build and browser experience/account checks pass.
+The new suite includes 30 locale/width combinations, touch, keyboard, no-JS,
+reduced motion and zoom. Local mobile lab median LCP 0.82 s, maximum CLS 0.075;
+these are not field metrics. Evidence: `docs/EXPERIENCE-VERIFICATION.md`.
+This remains a protected Preview release. Delivery configuration stays paused.
+
+
 ## Google callback redirect fix — 2026-11-09
 
 A real login exposed a response-wrapper bug: Better Auth can return an empty
