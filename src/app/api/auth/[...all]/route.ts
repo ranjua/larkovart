@@ -1,6 +1,9 @@
 import { customerServer } from "@/lib/customer/server";
 import { customerResponse } from "@/lib/customer/response";
-import { customerEmailLimit } from "@/lib/customer/mail";
+import {
+  customerEmailLimit,
+  customerDailyEmailLimit,
+} from "@/lib/customer/mail";
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 async function handle(request: Request) {
@@ -96,9 +99,14 @@ async function handle(request: Request) {
 
     const s = customerServer();
     await s.ready();
-    if (emailForLimit) {
+    if (
+      emailForLimit ||
+      (request.method === "POST" && path === "/two-factor/send-otp")
+    ) {
       try {
-        await customerEmailLimit(s.client, emailForLimit, emailPurpose);
+        if (emailForLimit)
+          await customerEmailLimit(s.client, emailForLimit, emailPurpose);
+        await customerDailyEmailLimit(s.client);
       } catch {
         return Response.json(
           { message: "Email requests temporarily limited." },

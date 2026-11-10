@@ -88,6 +88,11 @@ with tempfile.TemporaryDirectory(prefix='larkova-customer-browser-') as director
     assert post(endpoint,{'expectedRevision':0,'photos':[]},admin).status==409
     assert post(endpoint,{'expectedRevision':1,'photos':[{'id':str(uuid.uuid4()),'image':'https://example.com/forged.jpg','kind':'detail'}]},admin).status==422
     adminpage=admin.new_page();adminpage.goto(BASE+'/studio')
+    assert post('/api/studio/email-test',{},second).status==403
+    assert post('/api/studio/email-test',{},admin).status==503
+    expect(adminpage.get_by_text('Gmail setup pending',exact=True)).to_be_visible()
+    adminpage.get_by_text('Customer emails',exact=True).click()
+    expect(adminpage.get_by_role('button',name='Send test to my Gmail',exact=True)).to_be_disabled()
     editor=adminpage.locator('.studio-work').filter(has=adminpage.get_by_role('heading',name='Mar2',exact=True)).locator('.photo-set-editor')
     editor.locator('summary').click()
     editor.get_by_label('Add photograph',exact=True).set_input_files(ROOT/'public/artworks/Peonea.jpg')

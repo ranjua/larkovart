@@ -1,3 +1,4 @@
+import { customerEmailDeliveryConfig } from "./email-delivery.ts";
 export function customerConfig() {
   const environment =
     process.env.VERCEL_ENV || process.env.CUSTOMER_ENVIRONMENT || "development";
@@ -27,7 +28,8 @@ export function customerConfig() {
       throw new Error("Invalid customer origin");
     baseURL = u.origin;
   }
-  const emailFrom = process.env.CUSTOMER_EMAIL_FROM || "";
+  const delivery = customerEmailDeliveryConfig();
+  const emailFrom = delivery.from;
   const ready = secret.length >= 32 && !!baseURL;
   return {
     environment,
@@ -35,7 +37,7 @@ export function customerConfig() {
     baseURL,
     ready,
     emailFrom,
-    emailReady: ready && !!process.env.RESEND_API_KEY && !!emailFrom,
+    emailReady: ready && delivery.ready,
     googleReady:
       ready &&
       !!process.env.CUSTOMER_GOOGLE_CLIENT_ID &&

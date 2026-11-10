@@ -7,6 +7,8 @@ import { IntegrationPanel } from "@/components/integration-panel";
 import { recurrenteConfigured } from "@/lib/integrations/recurrente";
 import { shippingStatus } from "@/lib/shipping";
 import { photoConfigured } from "@/lib/photo";
+import { EmailSettings } from "@/components/email-settings";
+import { customerEmailDeliveryConfig } from "@/lib/customer/email-delivery";
 export const dynamic = "force-dynamic";
 export default async function StudioPage() {
   const authorized = await session();
@@ -34,6 +36,14 @@ export default async function StudioPage() {
         />
       ) : (
         <Studio works={null} orders={[]} aiConnected={false} />
+      )}
+      {authorized && (
+        <EmailSettings
+          ready={
+            customerEmailDeliveryConfig().provider === "gmail" &&
+            customerEmailDeliveryConfig().ready
+          }
+        />
       )}
       {authorized && (
         <details className="studio-settings">

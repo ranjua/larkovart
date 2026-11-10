@@ -188,9 +188,11 @@ test("customer email limits persist across transports and never return a code", 
     "CREATE TABLE customer_email_limits(id TEXT PRIMARY KEY,count INTEGER NOT NULL,started_at INTEGER NOT NULL)",
   );
   const original = globalThis.fetch,
-    oldKey = process.env.RESEND_API_KEY;
+    oldKey = process.env.RESEND_API_KEY,
+    oldFrom = process.env.CUSTOMER_EMAIL_FROM;
   let messages = 0;
   process.env.RESEND_API_KEY = "re_test_local_only";
+  process.env.CUSTOMER_EMAIL_FROM = "Test <accounts@example.test>";
   globalThis.fetch = async (_url, options) => {
     const body = JSON.parse(String(options?.body));
     assert.equal(body.to[0], "fixture@example.test");
@@ -204,7 +206,7 @@ test("customer email limits persist across transports and never return a code", 
         "fixture@example.test",
         "email-verification",
       );
-      await customerMailer("Test <accounts@example.test>")({
+      await customerMailer()({
         email: "fixture@example.test",
         code: "123456",
         purpose: "email-verification",
@@ -221,6 +223,8 @@ test("customer email limits persist across transports and never return a code", 
     globalThis.fetch = original;
     if (oldKey === undefined) delete process.env.RESEND_API_KEY;
     else process.env.RESEND_API_KEY = oldKey;
+    if (oldFrom === undefined) delete process.env.CUSTOMER_EMAIL_FROM;
+    else process.env.CUSTOMER_EMAIL_FROM = oldFrom;
     client.close();
   }
 });

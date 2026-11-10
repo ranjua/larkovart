@@ -20,18 +20,20 @@
   },
   "dependencies": {
     "@libsql/client": "latest",
+    "@libsql/kysely-libsql": "^0.4.1",
+    "better-auth": "^1.7.18",
+    "kysely": "^0.29.8",
     "lucide-react": "latest",
     "next": "latest",
+    "nodemailer": "^10.4.0",
     "react": "latest",
     "react-dom": "latest",
     "svix": "^2.9.1",
-    "zod": "latest",
-    "better-auth": "^1.7.18",
-    "@libsql/kysely-libsql": "^0.4.1",
-    "kysely": "^0.29.8"
+    "zod": "latest"
   },
   "devDependencies": {
     "@types/node": "latest",
+    "@types/nodemailer": "^8.0.2",
     "@types/react": "latest",
     "@types/react-dom": "latest",
     "typescript": "latest"

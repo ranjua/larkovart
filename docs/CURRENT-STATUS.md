@@ -1,4 +1,17 @@
-# Current status — 2026-11-09
+# Current status — 2026-11-10
+
+## Gmail customer email — 2026-11-10
+
+Added Gmail SMTP delivery for customer verification, password recovery and optional
+sign-in OTP, selectable with `CUSTOMER_EMAIL_PROVIDER=gmail`. The sender is fixed
+to `larkova.art@gmail.com`; a dedicated Google app password is required. Existing
+Resend admin OTP and customer Google login remain separate. All 87 Node tests pass.
+New Studio customer-email settings provide a protected, rate-limited test message
+to the owner only. Provider failures expose no raw responses or credentials and
+never trigger automatic fallback/retries. Shared daily customer email requests
+are capped at 200. Real Gmail delivery remains unverified until the owner saves
+`GMAIL_APP_PASSWORD` and the hosted test is completed. This does not implement
+order-confirmation emails. Setup: `docs/GMAIL-SETUP.md`.
 
 ## Permanent artwork deletion — 2026-11-09
 

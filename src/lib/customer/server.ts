@@ -55,7 +55,7 @@ export function customerServer() {
             }
           : undefined,
       },
-      customerMailer(c.emailFrom),
+      customerMailer(),
     ),
     client,
   };
